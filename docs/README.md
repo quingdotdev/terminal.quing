@@ -2,6 +2,8 @@
 
 this folder contains the documentation set for terminal by Quing. it follows the slate design language and a direct, traditional tone.
 
+docs are written so a reader can move from product intent to daily use, then to implementation details. start with the overview, then usage, then the walkthrough if you want a code level map.
+
 ## contents
 
 | document | focus |
@@ -13,4 +15,6 @@ this folder contains the documentation set for terminal by Quing. it follows the
 | [architecture.md](architecture.md) | runtime layers and data flow |
 | [development.md](development.md) | local setup and build steps |
 | [troubleshooting.md](troubleshooting.md) | common issues and fixes |
+| [docs-map.md](docs-map.md) | why each doc exists and when to use it |
+| [code-walkthrough.md](code-walkthrough.md) | page by page code overview |
 | [brand.md](brand.md) | official Quing brand rules |

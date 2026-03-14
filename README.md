@@ -2,6 +2,10 @@
 
 terminal by Quing is a multi project terminal built for people who keep several codebases open and need fast context switching. it was created to support a multi project workflow and multi terminal multitasking without extra ceremony.
 
+## status
+
+version is 0.0.1. there are no exe files yet because the project is early stage and packaging is not part of the public release process.
+
 ## overview
 
 this app runs on electron with xterm and node-pty. it keeps projects, tabs, and panes inside a single workspace and stores that workspace locally between launches.
@@ -54,4 +58,8 @@ right click inside a terminal for copy, paste, select all, and find. use the com
 
 ## docs
 
-read the full documentation in [docs/README.md](docs/README.md). brand rules are in [docs/brand.md](docs/brand.md).
+the documentation index is in [docs/README.md](docs/README.md). the file [docs/docs-map.md](docs/docs-map.md) explains the purpose of each doc. a code walkthrough with block level commentary is in [docs/code-walkthrough.md](docs/code-walkthrough.md).
+
+## contribution
+
+contribution rules are in [CONTRIBUTING.md](CONTRIBUTING.md). the code of conduct is in [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). the writing guide for docs and release notes is in [WRITING-GUIDE.md](WRITING-GUIDE.md).
