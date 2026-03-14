@@ -1,73 +1,57 @@
-# React + TypeScript + Vite
+# terminal by Quing
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+terminal by Quing is a multi project terminal built for people who keep several codebases open and need fast context switching. it was created to support a multi project workflow and multi terminal multitasking without extra ceremony.
 
-Currently, two official plugins are available:
+## overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+this app runs on electron with xterm and node-pty. it keeps projects, tabs, and panes inside a single workspace and stores that workspace locally between launches.
 
-## React Compiler
+## features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| capability | detail |
+| --- | --- |
+| multi project workspace | projects and tabs stay together and reopen in the last active state |
+| panes that you control | split panes are resizable and the active pane is highlighted |
+| profile based terminals | panes can use different shells with editable args and cwd |
+| search and command palette | terminal search and keyboard driven actions are built in |
+| themes and status | light, dark, and dusk themes with a status bar for context |
+| workspace portability | import and export the full workspace as json |
 
-## Expanding the ESLint configuration
+## quick start
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+install dependencies and run the dev app.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+bun install
+bun run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+if you do not use bun, npm is supported.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
+
+## usage
+
+right click inside a terminal for copy, paste, select all, and find. use the command palette for split actions and workspace actions.
+
+| action | shortcut |
+| --- | --- |
+| switch project | Alt+1..9 |
+| switch tab | Ctrl+1..9 |
+| new terminal from profile 1..3 | Ctrl+Shift+1..3 |
+| command palette | Ctrl+Shift+P |
+| settings | Ctrl+, |
+| find in terminal | Ctrl+F |
+| copy selection | Ctrl+Shift+C |
+| paste | Ctrl+Shift+V |
+| next tab | Ctrl+Tab |
+| previous tab | Ctrl+Shift+Tab |
+| focus next pane | Ctrl+Alt+ArrowRight |
+| focus previous pane | Ctrl+Alt+ArrowLeft |
+
+## docs
+
+read the full documentation in [docs/README.md](docs/README.md). brand rules are in [docs/brand.md](docs/brand.md).
