@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Inter Variable';
+  src: url('https://cdn.thekzbn.name.ng/assets/font/InterVariable.woff2') format('woff2'),
+    url('https://cdn.thekzbn.name.ng/assets/font/InterVariable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter Variable';
+  src: url('https://cdn.thekzbn.name.ng/assets/font/InterVariable-Italic.woff2') format('woff2'),
+    url('https://cdn.thekzbn.name.ng/assets/font/InterVariable-Italic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Merriweather';
+  src: url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300..900;1,300..900&display=swap');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+*:not(.terminal-view), *:not(.terminal-view *) {
+  font-feature-settings: "cv01" 1, "cv02" 1, "cv03" 1, "cv04" 1, "cv05" 1,
+    "cv06" 1, "cv07" 1, "cv08" 1, "cv09" 1, "cv10" 1,
+    "cv11" 1, "cv12" 1, "cv13" 1, "cv14" 1,
+    "liga" 1, "calt" 1, "zero" 1;
+}
+
+.terminal-view, .terminal-view * {
+  font-feature-settings: normal !important;
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+:root {
+  --start: #FFFFFF;
+  --end: #0F172A;
+  --cornflower: #CBD5E1;
+  --charcoal: #0F172A;
+  --ocean: #475569;
+  --alert: #EF4444;
+  --go: #22C55E;
+  font-family: 'Inter Variable', sans-serif;
+}
+
+[data-theme="dark"] {
+  --start: #0F172A;
+  --end: #FFFFFF;
+  --cornflower: #1E293B;
+  --charcoal: #F8FAFC;
+  --ocean: #94A3B8;
+  --alert: #EF4444;
+  --go: #22C55E;
+}
+
+[data-theme="dusk"] {
+  --start: #0B1020;
+  --end: #F8FAFC;
+  --cornflower: #1F2937;
+  --charcoal: #E2E8F0;
+  --ocean: #94A3B8;
+  --alert: #F97316;
+  --go: #10B981;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter Variable";
+}
+.terminal-view, .terminal-view *{
+  letter-spacing: normal !important;
+}
+body {
+  background-color: var(--start);
+  color: var(--charcoal);
+  height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+}
+
+.slate-border {
+  border: 1px solid var(--cornflower);
+}
+
+.slate-text-muted {
+  color: var(--ocean);
+}
+
+.app-region-drag {
+  -webkit-app-region: drag;
+}
+
+.app-region-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.pane-active {
+  box-shadow: inset 0 0 0 1px var(--cornflower);
+}
+
+.pane-resizer {
+  width: 6px;
+  cursor: col-resize;
+  position: relative;
+  flex: 0 0 6px;
+  background: transparent;
+}
+
+.pane-resizer::before {
+  content: '';
+  position: absolute;
+  top: 15%;
+  bottom: 15%;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: var(--cornflower);
+  opacity: 0.5;
+}
+
+.status-bar {
+  height: 28px;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+/* Custom Scrollbar for Slate */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cornflower);
+  border-radius: 1rem;
+}
