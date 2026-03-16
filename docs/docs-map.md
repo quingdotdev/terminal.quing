@@ -14,3 +14,4 @@ this file explains the purpose of each document in this folder and when to use i
 | docs-map.md | when you are not sure where to start |
 | code-walkthrough.md | when you want a page by page code overview |
 | brand.md | when you need the Quing brand rules |
+| add-unsplit-show-split-tab-names-in-tab-strip.md | when you are implementing unsplit and split tab naming |

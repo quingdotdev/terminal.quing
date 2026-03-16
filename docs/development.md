@@ -1,17 +1,11 @@
 # development
 
-this project is developed on windows with electron and vite. use a current node lts. bun is used in the repository, and npm works as an alternative.
+this project is developed on windows with electron and vite. use a current node lts. bun is the package manager for this repo.
 
 ## install
 
 ```bash
 bun install
-```
-
-or with npm.
-
-```bash
-npm install
 ```
 
 ## run

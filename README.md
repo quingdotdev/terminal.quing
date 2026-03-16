@@ -30,13 +30,6 @@ bun install
 bun run dev
 ```
 
-if you do not use bun, npm is supported.
-
-```bash
-npm install
-npm run dev
-```
-
 ## usage
 
 right click inside a terminal for copy, paste, select all, and find. use the command palette for split actions and workspace actions.

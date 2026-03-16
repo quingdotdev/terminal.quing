@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.0.1",
   "description": "terminal by Quing - A modern, lightweight terminal emulator.",
-  "author": "Ayomi",
+  "author": "Ayomi (@thekzbn)",
+  "license": "MIT",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {

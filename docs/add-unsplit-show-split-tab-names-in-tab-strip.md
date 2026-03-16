@@ -1,7 +1,7 @@
-# Add “Unsplit” + show split tab names in tab strip
+# Add "Unsplit" + show split tab names in tab strip
 
 ## Summary
-Implement a first-class **unsplit** action for split tabs (tabs containing multiple panes), and update the tab strip (“taskbar nav”) to show the **names of all panes** inside a split tab so users can always see both split tab names.
+Implement a first-class **unsplit** action for split tabs (tabs containing multiple panes), and update the tab strip ("taskbar nav") to show the **names of all panes** inside a split tab so users can always see both split tab names.
 
 ## Current State (from repo inspection)
 - Split is implemented in `src/App.tsx` via `splitTab(projectId, targetTabId, sourceTabId?)`.
@@ -10,7 +10,7 @@ Implement a first-class **unsplit** action for split tabs (tabs containing multi
 - The tab strip currently renders only `t.title` and shows a split icon when `t.panes.length > 1`.
 
 ## Decisions (confirmed)
-- **Unsplit behavior:** “One tab per pane” — keep first pane in current tab, create a new tab for each remaining pane.
+- **Unsplit behavior:** "One tab per pane" -- keep first pane in current tab, create a new tab for each remaining pane.
 - **Name display in tab strip:** show joined pane titles for split tabs.
 - **Renaming split tab:** rename the **group tab** (not individual pane titles).
 
@@ -22,14 +22,14 @@ Implement a first-class **unsplit** action for split tabs (tabs containing multi
 
 2. Keep `TerminalTab.title` as the **group title** (rename affects this only).
 
-3. Add a small “display title” helper (derived at render time):
+3. Add a small "display title" helper (derived at render time):
    - If `tab.panes.length === 1`: show `tab.title`.
    - If `tab.panes.length > 1`: show something like:
-     - `"{tab.title} • {paneTitle1} | {paneTitle2} | ..."` (with truncation via existing `truncate` styling).
+     - `"{tab.title} - {paneTitle1} | {paneTitle2} | ..."` (with truncation via existing `truncate` styling).
 
 This satisfies:
 - Group rename changes the left part (`tab.title`).
-- The pane names remain visible (right part), meeting “see names of both split tabs”.
+- The pane names remain visible (right part), meeting "see names of both split tabs".
 
 ---
 
@@ -53,12 +53,12 @@ When loading `projects` from localStorage in the existing initializer:
 
 This prevents old saved workspaces from displaying blank pane names.
 
-### C) Add “Unsplit” action
+### C) Add "Unsplit" action
 Add function `unsplitTab(projectId: string, tabId: string)`:
 - Preconditions: tab exists and `tab.panes.length > 1`.
 - Implementation:
   - Keep pane[0] in the existing tab; set its panes to `[pane0]`.
-  - Set the existing tab’s title to `pane0.title ?? tab.title` (so the resulting single tab is named sensibly).
+  - Set the existing tab's title to `pane0.title ?? tab.title` (so the resulting single tab is named sensibly).
   - For each remaining pane i=1..n-1:
     - Create a new `TerminalTab` with:
       - `id`: new random id
@@ -67,12 +67,12 @@ Add function `unsplitTab(projectId: string, tabId: string)`:
     - Insert these new tabs immediately to the right of the original tab (so the restore feels natural).
 - UI entry point:
   - In the tab context menu (`contextMenu.type === 'tab'`), show:
-    - **“Unsplit into tabs”** only when `tab.panes.length > 1`.
+    - **"Unsplit into tabs"** only when `tab.panes.length > 1`.
 
 ### D) Update tab strip rendering (taskbar nav)
 In the tab strip map render:
 - Replace the displayed `t.title` with a computed label:
-  - `label = (t.panes.length > 1) ? "{t.title} • {joinedPaneTitles}" : t.title`
+  - `label = (t.panes.length > 1) ? "{t.title} - {joinedPaneTitles}" : t.title`
 - `joinedPaneTitles` is built from `t.panes.map(p => p.title ?? t.title)` and de-duped if necessary.
 
 ---
@@ -92,18 +92,18 @@ In the tab strip map render:
 
 ## Test Cases / Scenarios (manual acceptance)
 1. **Split with existing tab**
-   - Create two tabs: “powershell” and “bash”.
-   - Split “powershell” with “bash”.
-   - Expect tab strip label to show both names (e.g. `powershell • powershell | bash`).
+   - Create two tabs: "powershell" and "bash".
+   - Split "powershell" with "bash".
+   - Expect tab strip label to show both names (e.g. `powershell - powershell | bash`).
 2. **Unsplit restore**
-   - From the split tab above, choose “Unsplit into tabs”.
-   - Expect two tabs reappear, titled “powershell” and “bash”, each with one pane.
+   - From the split tab above, choose "Unsplit into tabs".
+   - Expect two tabs reappear, titled "powershell" and "bash", each with one pane.
 3. **Split + create new pane**
-   - Split a tab via “+ create new pane”.
+   - Split a tab via "+ create new pane".
    - Expect the new pane name to appear in the joined list (not blank).
 4. **Rename group title**
-   - Rename a split tab to “workspace”.
-   - Expect label like `workspace • powershell | bash` (pane names unchanged).
+   - Rename a split tab to "workspace".
+   - Expect label like `workspace - powershell | bash` (pane names unchanged).
 5. **Back-compat load**
    - Load a workspace saved before this change (no `pane.title` in localStorage).
    - Expect split tab strip labels to still show meaningful pane names (fallback to tab title).
@@ -113,4 +113,4 @@ In the tab strip map render:
 ## Assumptions / Defaults
 - Pane names are sourced from `pane.title` (preferred), falling back to the owning `tab.title`.
 - Unsplit keeps the first pane in-place and inserts restored tabs adjacent to the original tab for predictability.
-- No notion of “active pane” is introduced in this iteration (so unsplit is deterministic and simple).
+- No notion of "active pane" is introduced in this iteration (so unsplit is deterministic and simple).

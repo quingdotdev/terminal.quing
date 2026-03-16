@@ -18,3 +18,4 @@ docs are written so a reader can move from product intent to daily use, then to 
 | [docs-map.md](docs-map.md) | why each doc exists and when to use it |
 | [code-walkthrough.md](code-walkthrough.md) | page by page code overview |
 | [brand.md](brand.md) | official Quing brand rules |
+| [add-unsplit-show-split-tab-names-in-tab-strip.md](add-unsplit-show-split-tab-names-in-tab-strip.md) | a focused implementation note for unsplitting and tab title display |
