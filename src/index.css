@@ -36,18 +36,7 @@
   font-display: swap;
 }
 
-*:not(.terminal-view), *:not(.terminal-view *) {
-  font-feature-settings: "cv01" 1, "cv02" 1, "cv03" 1, "cv04" 1, "cv05" 1,
-    "cv06" 1, "cv07" 1, "cv08" 1, "cv09" 1, "cv10" 1,
-    "cv11" 1, "cv12" 1, "cv13" 1, "cv14" 1,
-    "liga" 1, "calt" 1, "zero" 1;
-}
-
-.terminal-view, .terminal-view * {
-  font-feature-settings: normal !important;
-  font-family: 'JetBrains Mono', monospace !important;
-}
-
+/* Global Styles */
 :root {
   --start: #FFFFFF;
   --end: #0F172A;
@@ -56,47 +45,100 @@
   --ocean: #475569;
   --alert: #EF4444;
   --go: #22C55E;
-  font-family: 'Inter Variable', sans-serif;
+  font-family: 'Inter Variable', Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-feature-settings: "cv01" 1, "cv02" 1, "cv03" 1, "cv04" 1, "cv05" 1,
+    "cv06" 1, "cv07" 1, "cv08" 1, "cv09" 1, "cv10" 1,
+    "cv11" 1, "cv12" 1, "cv13" 1, "cv14" 1,
+    "liga" 1, "calt" 1, "zero" 1;
 }
 
-[data-theme="dark"] {
-  --start: #0F172A;
-  --end: #FFFFFF;
-  --cornflower: #1E293B;
-  --charcoal: #F8FAFC;
-  --ocean: #94A3B8;
-  --alert: #EF4444;
-  --go: #22C55E;
-}
+/* Theme Families & Variants */
+[data-theme-family="default"][data-theme-variant="light"] { --start: #FFFFFF; --end: #0F172A; --cornflower: #CBD5E1; --charcoal: #0F172A; --ocean: #475569; }
+[data-theme-family="default"][data-theme-variant="dark"] { --start: #0F172A; --end: #FFFFFF; --cornflower: #1E293B; --charcoal: #F8FAFC; --ocean: #94A3B8; }
 
-[data-theme="dusk"] {
-  --start: #0B1020;
-  --end: #F8FAFC;
-  --cornflower: #1F2937;
-  --charcoal: #E2E8F0;
-  --ocean: #94A3B8;
-  --alert: #F97316;
-  --go: #10B981;
-}
+[data-theme-family="dusk"][data-theme-variant="light"] { --start: #F1F5F9; --end: #1E293B; --cornflower: #CBD5E1; --charcoal: #1E293B; --ocean: #64748B; }
+[data-theme-family="dusk"][data-theme-variant="dark"] { --start: #0B1020; --end: #F8FAFC; --cornflower: #1F2937; --charcoal: #E2E8F0; --ocean: #94A3B8; }
+
+[data-theme-family="ocean"][data-theme-variant="light"] { --start: #F0F9FF; --end: #075985; --cornflower: #BAE6FD; --charcoal: #075985; --ocean: #0369A1; }
+[data-theme-family="ocean"][data-theme-variant="dark"] { --start: #082F49; --end: #E0F2FE; --cornflower: #0C4A6E; --charcoal: #E0F2FE; --ocean: #7DD3FC; }
+
+[data-theme-family="forest"][data-theme-variant="light"] { --start: #F0FDF4; --end: #166534; --cornflower: #BBF7D0; --charcoal: #166534; --ocean: #15803D; }
+[data-theme-family="forest"][data-theme-variant="dark"] { --start: #064E3B; --end: #ECFDF5; --cornflower: #065F46; --charcoal: #ECFDF5; --ocean: #34D399; }
+
+[data-theme-family="crimson"][data-theme-variant="light"] { --start: #FFF1F2; --end: #9F1239; --cornflower: #FECDD3; --charcoal: #9F1239; --ocean: #BE123C; }
+[data-theme-family="crimson"][data-theme-variant="dark"] { --start: #4C0519; --end: #FFF1F2; --cornflower: #881337; --charcoal: #FFF1F2; --ocean: #FB7185; }
+
+[data-theme-family="amber"][data-theme-variant="light"] { --start: #FFFBEB; --end: #92400E; --cornflower: #FEF3C7; --charcoal: #92400E; --ocean: #B45309; }
+[data-theme-family="amber"][data-theme-variant="dark"] { --start: #451A03; --end: #FEF3C7; --cornflower: #78350F; --charcoal: #FEF3C7; --ocean: #FBBF24; }
+
+[data-theme-family="purple"][data-theme-variant="light"] { --start: #FAF5FF; --end: #6B21A8; --cornflower: #E9D5FF; --charcoal: #6B21A8; --ocean: #7E22CE; }
+[data-theme-family="purple"][data-theme-variant="dark"] { --start: #2E1065; --end: #F5F3FF; --cornflower: #4C1D95; --charcoal: #F5F3FF; --ocean: #A78BFA; }
+
+[data-theme-family="sky"][data-theme-variant="light"] { --start: #F0F9FF; --end: #0C4A6E; --cornflower: #E0F2FE; --charcoal: #0C4A6E; --ocean: #0369A1; }
+[data-theme-family="sky"][data-theme-variant="dark"] { --start: #082F49; --end: #F0F9FF; --cornflower: #0C4A6E; --charcoal: #F0F9FF; --ocean: #7DD3FC; }
+
+[data-theme-family="rose"][data-theme-variant="light"] { --start: #FFF1F2; --end: #9F1239; --cornflower: #FFE4E6; --charcoal: #9F1239; --ocean: #E11D48; }
+[data-theme-family="rose"][data-theme-variant="dark"] { --start: #881337; --end: #FFF1F2; --cornflower: #9F1239; --charcoal: #FFF1F2; --ocean: #FDA4AF; }
+
+[data-theme-family="mint"][data-theme-variant="light"] { --start: #F0FDFA; --end: #0D9488; --cornflower: #CCFBF1; --charcoal: #0D9488; --ocean: #0F766E; }
+[data-theme-family="mint"][data-theme-variant="dark"] { --start: #134E4A; --end: #F0FDFA; --cornflower: #115E59; --charcoal: #F0FDFA; --ocean: #5EEAD4; }
+
+[data-theme-family="stone"][data-theme-variant="light"] { --start: #FAFAF9; --end: #292524; --cornflower: #E7E5E4; --charcoal: #292524; --ocean: #57534E; }
+[data-theme-family="stone"][data-theme-variant="dark"] { --start: #1C1917; --end: #F5F5F4; --cornflower: #292524; --charcoal: #F5F5F4; --ocean: #78716C; }
+
+[data-theme-family="sepia"][data-theme-variant="light"] { --start: #FEF3C7; --end: #78350F; --cornflower: #FDE68A; --charcoal: #78350F; --ocean: #92400E; }
+[data-theme-family="sepia"][data-theme-variant="dark"] { --start: #451A03; --end: #FEF3C7; --cornflower: #78350F; --charcoal: #FEF3C7; --ocean: #F59E0B; }
+
+[data-theme-family="nord"][data-theme-variant="light"] { --start: #ECEFF4; --end: #2E3440; --cornflower: #D8DEE9; --charcoal: #2E3440; --ocean: #4C566A; }
+[data-theme-family="nord"][data-theme-variant="dark"] { --start: #2E3440; --end: #ECEFF4; --cornflower: #3B4252; --charcoal: #ECEFF4; --ocean: #D8DEE9; }
+
+[data-theme-family="dracula"][data-theme-variant="light"] { --start: #F8F8F2; --end: #282A36; --cornflower: #E2E2D8; --charcoal: #282A36; --ocean: #44475A; }
+[data-theme-family="dracula"][data-theme-variant="dark"] { --start: #282A36; --end: #F8F8F2; --cornflower: #44475A; --charcoal: #F8F8F2; --ocean: #6272A4; }
+
+[data-theme-family="gruvbox"][data-theme-variant="light"] { --start: #FBF1C7; --end: #3C3836; --cornflower: #EBDBB2; --charcoal: #3C3836; --ocean: #7C6F64; }
+[data-theme-family="gruvbox"][data-theme-variant="dark"] { --start: #282828; --end: #EBDBB2; --cornflower: #3C3836; --charcoal: #EBDBB2; --ocean: #A89984; }
+
+[data-theme-family="tokyo"][data-theme-variant="light"] { --start: #E6E7ED; --end: #1F2335; --cornflower: #C8CDD6; --charcoal: #1F2335; --ocean: #545C7E; }
+[data-theme-family="tokyo"][data-theme-variant="dark"] { --start: #1A1B26; --end: #C0CAF5; --cornflower: #24283B; --charcoal: #C0CAF5; --ocean: #A9B1D6; }
+
+[data-theme-family="solarized"][data-theme-variant="light"] { --start: #FDF6E3; --end: #002B36; --cornflower: #EEE8D5; --charcoal: #586E75; --ocean: #657B83; }
+[data-theme-family="solarized"][data-theme-variant="dark"] { --start: #002B36; --end: #FDF6E3; --cornflower: #073642; --charcoal: #839496; --ocean: #93A1A1; }
+
+[data-theme-family="monokai"][data-theme-variant="light"] { --start: #F8F8F2; --end: #272822; --cornflower: #E5E5DC; --charcoal: #272822; --ocean: #75715E; }
+[data-theme-family="monokai"][data-theme-variant="dark"] { --start: #272822; --end: #F8F8F2; --cornflower: #3E3D32; --charcoal: #F8F8F2; --ocean: #A59F85; }
+
+[data-theme-family="catppuccin"][data-theme-variant="light"] { --start: #EFF1F5; --end: #1E1E2E; --cornflower: #CCD0DA; --charcoal: #4C4F69; --ocean: #6C6F85; }
+[data-theme-family="catppuccin"][data-theme-variant="dark"] { --start: #1E1E2E; --end: #EFF1F5; --cornflower: #313244; --charcoal: #CDD6F4; --ocean: #A6ADC8; }
+
+[data-theme-family="everforest"][data-theme-variant="light"] { --start: #F3EAD3; --end: #2B3339; --cornflower: #E6DCC4; --charcoal: #5C6A72; --ocean: #829181; }
+[data-theme-family="everforest"][data-theme-variant="dark"] { --start: #2B3339; --end: #F3EAD3; --cornflower: #3A444A; --charcoal: #D3C6AA; --ocean: #9DA9A0; }
+
+[data-theme-family="matrix"][data-theme-variant="light"] { --start: #EAFBEA; --end: #0C0F0A; --cornflower: #CFF5D2; --charcoal: #064E3B; --ocean: #14532D; }
+[data-theme-family="matrix"][data-theme-variant="dark"] { --start: #0C0F0A; --end: #EAFBEA; --cornflower: #0F2A18; --charcoal: #00FF41; --ocean: #6AFF84; }
+
+[data-theme-family="paper"][data-theme-variant="light"] { --start: #FAFAFA; --end: #111827; --cornflower: #E5E7EB; --charcoal: #111827; --ocean: #6B7280; }
+[data-theme-family="paper"][data-theme-variant="dark"] { --start: #111827; --end: #FAFAFA; --cornflower: #1F2937; --charcoal: #F9FAFB; --ocean: #9CA3AF; }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Inter Variable";
 }
-.terminal-view, .terminal-view *{
-  letter-spacing: normal !important;
-}
+
 body {
   background-color: var(--start);
   color: var(--charcoal);
   height: 100vh;
   overflow: hidden;
+  font-family: 'Inter Variable', Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
 #root {
   height: 100%;
+}
+
+.terminal-view, .terminal-view * {
+  letter-spacing: normal !important;
 }
 
 .slate-border {

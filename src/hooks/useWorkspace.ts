@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { loadWorkspace, saveWorkspace, normalizeWorkspace, DEFAULT_PROFILES } from '../state/workspace';
 import type { Project, TerminalTab, Pane, Profile } from '../state/types';
-import type { ThemeName } from '../state/themes';
+import type { ThemeFamily, ThemeVariant } from '../state/themes';
 
 const randomId = () => Math.random().toString(36).slice(2, 9);
 
@@ -18,7 +18,10 @@ export const useWorkspace = () => {
   const [profiles, setProfiles] = useState<Profile[]>(initialWorkspace.profiles);
   const [activeProjectId, setActiveProjectId] = useState<string>(initialWorkspace.activeProjectId);
   const [activeTabId, setActiveTabId] = useState<string>(initialWorkspace.activeTabId);
-  const [theme, setTheme] = useState<ThemeName>(initialWorkspace.theme);
+  const [theme, setTheme] = useState<ThemeFamily>(initialWorkspace.theme as ThemeFamily);
+  const [themeVariant, setThemeVariant] = useState<ThemeVariant>(initialWorkspace.themeVariant);
+  const [terminalFontFamily, setTerminalFontFamily] = useState<string>(initialWorkspace.terminalFontFamily);
+  const [terminalFontLigatures, setTerminalFontLigatures] = useState<boolean>(initialWorkspace.terminalFontLigatures);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(initialWorkspace.sidebarCollapsed);
   const [tabActivity, setTabActivity] = useState<Record<string, boolean>>({});
 
@@ -33,10 +36,13 @@ export const useWorkspace = () => {
       activeProjectId,
       activeTabId,
       theme,
+      themeVariant,
+      terminalFontFamily,
+      terminalFontLigatures,
       profiles,
       sidebarCollapsed,
     });
-  }, [projects, activeProjectId, activeTabId, theme, profiles, sidebarCollapsed]);
+  }, [projects, activeProjectId, activeTabId, theme, themeVariant, terminalFontFamily, terminalFontLigatures, profiles, sidebarCollapsed]);
 
   /**
    * Retrieves a profile by ID or returns a default fallback.
@@ -179,13 +185,15 @@ export const useWorkspace = () => {
         if (tabIndex === -1) return p;
 
         const tab = p.tabs[tabIndex];
-        if (!tab || tab.panes.length <= 1) return p;
+        if (!tab) return p;
 
         const normalizedPanes = tab.panes.map((pane) => ({
           ...pane,
           title: pane.title || tab.title || 'terminal',
           color: pane.color ?? tab.color,
         }));
+
+        if (normalizedPanes.length <= 1) return p;
 
         const [firstPane, ...restPanes] = normalizedPanes;
         const updatedTabs = [...p.tabs];
@@ -440,7 +448,10 @@ export const useWorkspace = () => {
     setProfiles(fresh.profiles);
     setActiveProjectId(fresh.activeProjectId);
     setActiveTabId(fresh.activeTabId);
-    setTheme(fresh.theme);
+    setTheme(fresh.theme as ThemeFamily);
+    setThemeVariant(fresh.themeVariant);
+    setTerminalFontFamily(fresh.terminalFontFamily);
+    setTerminalFontLigatures(fresh.terminalFontLigatures);
     setSidebarCollapsed(fresh.sidebarCollapsed);
   }, []);
 
@@ -460,7 +471,10 @@ export const useWorkspace = () => {
     setProfiles(normalized.profiles);
     setActiveProjectId(normalized.activeProjectId);
     setActiveTabId(normalized.activeTabId);
-    setTheme(normalized.theme);
+    setTheme(normalized.theme as ThemeFamily);
+    setThemeVariant(normalized.themeVariant);
+    setTerminalFontFamily(normalized.terminalFontFamily);
+    setTerminalFontLigatures(normalized.terminalFontLigatures);
     setSidebarCollapsed(normalized.sidebarCollapsed);
   }, []);
 
@@ -492,6 +506,12 @@ export const useWorkspace = () => {
     setActiveTabId,
     theme,
     setTheme,
+    themeVariant,
+    setThemeVariant,
+    terminalFontFamily,
+    setTerminalFontFamily,
+    terminalFontLigatures,
+    setTerminalFontLigatures,
     sidebarCollapsed,
     setSidebarCollapsed,
     tabActivity,

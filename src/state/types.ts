@@ -1,5 +1,3 @@
-import type { ThemeName } from './themes';
-
 export interface Profile {
   id: string;
   name: string;
@@ -40,7 +38,10 @@ export interface WorkspaceState {
   projects: Project[];
   activeProjectId: string;
   activeTabId: string;
-  theme: ThemeName;
+  theme: string;
+  themeVariant: 'light' | 'dark';
+  terminalFontFamily: string;
+  terminalFontLigatures: boolean;
   profiles: Profile[];
   sidebarCollapsed: boolean;
 }

@@ -21,7 +21,6 @@ import SettingsView from './components/SettingsView';
 import { cn } from './utils/cn';
 import { useWorkspace } from './hooks/useWorkspace';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { THEME_ORDER, THEME_LABELS } from './state/themes';
 import type { TerminalTab } from './state/types';
 
 const PRESET_COLORS = [
@@ -50,6 +49,12 @@ const App: React.FC = () => {
     activeTabId,
     theme,
     setTheme,
+    themeVariant,
+    setThemeVariant,
+    terminalFontFamily,
+    setTerminalFontFamily,
+    terminalFontLigatures,
+    setTerminalFontLigatures,
     sidebarCollapsed,
     setSidebarCollapsed,
     tabActivity,
@@ -109,8 +114,9 @@ const App: React.FC = () => {
 
   // Apply theme to document root
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+    document.documentElement.setAttribute('data-theme-family', theme);
+    document.documentElement.setAttribute('data-theme-variant', themeVariant);
+  }, [theme, themeVariant]);
 
   // Derived active state
   const activeProject = projects.find((p) => p.id === activeProjectId) || projects[0];
@@ -209,9 +215,9 @@ const App: React.FC = () => {
       category: 'terminal',
     });
     actions.push({
-      label: `toggle theme (current: ${THEME_LABELS[theme]})`,
-      icon: theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />,
-      action: () => setTheme(THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length]),
+      label: `toggle theme mode (current: ${themeVariant})`,
+      icon: themeVariant === 'dark' ? <Sun size={14} /> : <Moon size={14} />,
+      action: () => setThemeVariant(themeVariant === 'dark' ? 'light' : 'dark'),
       category: 'app',
     });
     actions.push({
@@ -224,7 +230,7 @@ const App: React.FC = () => {
       label: 'export workspace',
       icon: <Download size={14} />,
       action: () => {
-        const state = { version: 2, projects, activeProjectId, activeTabId, theme, profiles, sidebarCollapsed };
+        const state = { version: 2, projects, activeProjectId, activeTabId, theme, themeVariant, terminalFontFamily, terminalFontLigatures, profiles, sidebarCollapsed };
         const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -242,7 +248,7 @@ const App: React.FC = () => {
       category: 'workspace',
     });
     return actions.filter((a) => a.label.toLowerCase().includes(paletteSearch.toLowerCase()));
-  }, [profiles, activeProjectId, activeTab, theme, projects, activeTabId, sidebarCollapsed, paletteSearch, addTab, splitTab, unsplitTab, setTheme, setCurrentView]);
+  }, [profiles, activeProjectId, activeTab, theme, themeVariant, terminalFontFamily, terminalFontLigatures, projects, activeTabId, sidebarCollapsed, paletteSearch, addTab, splitTab, unsplitTab, setThemeVariant, setCurrentView]);
 
   /**
    * Pane Resizing Logic.
@@ -345,7 +351,7 @@ const App: React.FC = () => {
           onSplitTab={(sourceId) => splitTab(activeProjectId, contextMenu.targetId, sourceId)}
           onMoveTab={(dir) => moveTab(activeProjectId, contextMenu.targetId, dir)}
           onExportWorkspace={() => {
-            const state = { version: 2, projects, activeProjectId, activeTabId, theme, profiles, sidebarCollapsed };
+            const state = { version: 2, projects, activeProjectId, activeTabId, theme, themeVariant, terminalFontFamily, terminalFontLigatures, profiles, sidebarCollapsed };
             const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -371,7 +377,37 @@ const App: React.FC = () => {
       <Sidebar collapsed={sidebarCollapsed} hovered={sidebarHovered} onHoverChange={setSidebarHovered} projects={projects} activeProjectId={activeProjectId} onProjectClick={(id) => { setActiveProjectId(id); const p = projects.find(proj => proj.id === id); if (p && p.tabs.length > 0) setActiveTab(p.tabs[0].id); setCurrentView('terminal'); }} onAddProject={addProject} onContextMenu={(e, id) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, type: 'project', targetId: id }); setShowColorSubmenu(false); setShowSplitSubmenu(false); }} onStartRenaming={(id, val) => { setEditingId(id); setEditValue(val); setContextMenu(null); }} editingId={editingId} editValue={editValue} onEditValueChange={setEditValue} onRenameProject={(id) => { handleRenameProject(id, editValue); setEditingId(null); }} />
       
       <main className="flex-1 flex flex-col min-w-0 h-full relative">
-        <TabStrip tabs={activeProject?.tabs || []} activeTabId={activeTabId} currentView={currentView} compactTabs={compactTabs} onTabClick={setActiveTab} onRemoveTab={(id, e) => removeTab(activeProjectId, id, e)} onAddTab={(profileId) => addTab(activeProjectId, profileId)} onReorderTabs={(from, to) => reorderTabs(activeProjectId, from, to)} onStartRenaming={(id, val) => { setEditingId(id); setEditValue(val); setContextMenu(null); }} onContextMenu={(e, type, id) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, type, targetId: id }); setShowColorSubmenu(false); setShowSplitSubmenu(false); }} draggingTabId={draggingTabId} setDraggingTabId={setDraggingTabId} editingId={editingId} editValue={editValue} onEditValueChange={setEditValue} onRenameTab={(id) => { handleRenameTab(activeProjectId, id, editValue); setEditingId(null); }} tabActivity={tabActivity} showShellMenu={showShellMenu} setShowShellMenu={setShowShellMenu} profiles={profiles} theme={theme} onToggleTheme={() => setTheme(THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length])} onSetCurrentView={setCurrentView} onShowPalette={setShowPalette} tabStripRef={tabStripRef} menuRef={menuRef} renderTabLabel={renderTabLabel} getSplitTitleParts={(tab) => (tab.panes || []).map((p: any) => ({ title: p.title || tab.title || 'terminal', color: p.color }))} />
+        <TabStrip 
+          tabs={activeProject?.tabs || []} 
+          activeTabId={activeTabId} 
+          currentView={currentView} 
+          compactTabs={compactTabs} 
+          onTabClick={setActiveTab} 
+          onRemoveTab={(id, e) => removeTab(activeProjectId, id, e)} 
+          onAddTab={(profileId) => addTab(activeProjectId, profileId)} 
+          onReorderTabs={(from, to) => reorderTabs(activeProjectId, from, to)} 
+          onStartRenaming={(id, val) => { setEditingId(id); setEditValue(val); setContextMenu(null); }} 
+          onContextMenu={(e, type, id) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, type, targetId: id }); setShowColorSubmenu(false); setShowSplitSubmenu(false); }} 
+          draggingTabId={draggingTabId} 
+          setDraggingTabId={setDraggingTabId} 
+          editingId={editingId} 
+          editValue={editValue} 
+          onEditValueChange={setEditValue} 
+          onRenameTab={(id) => { handleRenameTab(activeProjectId, id, editValue); setEditingId(null); }} 
+          tabActivity={tabActivity} 
+          showShellMenu={showShellMenu} 
+          setShowShellMenu={setShowShellMenu} 
+          profiles={profiles} 
+          theme={theme} 
+          themeVariant={themeVariant}
+          onToggleTheme={() => setThemeVariant(themeVariant === 'dark' ? 'light' : 'dark')} 
+          onSetCurrentView={setCurrentView} 
+          onShowPalette={setShowPalette} 
+          tabStripRef={tabStripRef} 
+          menuRef={menuRef} 
+          renderTabLabel={renderTabLabel} 
+          getSplitTitleParts={(tab) => (tab.panes || []).map((p: any) => ({ title: p.title || tab.title || 'terminal', color: p.color }))} 
+        />
         
         <div className="flex-1 relative bg-[var(--start)] overflow-hidden">
           {/* Hidden input for workspace import */}
@@ -428,7 +464,23 @@ const App: React.FC = () => {
                             setShowSplitSubmenu(false);
                           }}
                         >
-                          <TerminalView id={pane.id} shell={shell} args={args} cwd={cwd} theme={theme} isActive={isActivePane && isVisible} isVisible={isVisible} onExit={() => removePane(project.id, tab.id, pane.id)} onActivity={() => handleActivity(pane.id, projects, activeTab, activePaneId, currentView)} onSizeChange={(size) => setPaneSizesMap((prev) => ({ ...prev, [pane.id]: size }))} onReady={(id, api) => terminalApis.current.set(id, api)} onDispose={(id) => terminalApis.current.delete(id)} />
+                          <TerminalView 
+                            id={pane.id} 
+                            shell={shell} 
+                            args={args} 
+                            cwd={cwd} 
+                            theme={theme} 
+                            themeVariant={themeVariant}
+                            terminalFontFamily={terminalFontFamily}
+                            terminalFontLigatures={terminalFontLigatures}
+                            isActive={isActivePane && isVisible} 
+                            isVisible={isVisible} 
+                            onExit={() => removePane(project.id, tab.id, pane.id)} 
+                            onActivity={() => handleActivity(pane.id, projects, activeTab, activePaneId, currentView)} 
+                            onSizeChange={(size) => setPaneSizesMap((prev) => ({ ...prev, [pane.id]: size }))} 
+                            onReady={(id, api) => terminalApis.current.set(id, api)} 
+                            onDispose={(id) => terminalApis.current.delete(id)} 
+                          />
                         </div>
                         {/* Vertical resize handle */}
                         {idx < tab.panes.length - 1 && <div className="pane-resizer" onMouseDown={(e) => { e.preventDefault(); const container = paneContainerRef.current; if (!container) return; const width = container.getBoundingClientRect().width || 1; const sizes = tab.paneSizes || tab.panes.map(() => 100 / Math.max(1, tab.panes.length)); resizeRef.current = { tabId: tab.id, index: idx, startX: e.clientX, startSizes: sizes, containerWidth: width }; document.body.style.cursor = 'col-resize'; }} />}
@@ -443,7 +495,28 @@ const App: React.FC = () => {
           </div>
 
           {/* Settings View Container */}
-          {currentView === 'settings' && <SettingsView profiles={profiles} updateProfile={updateProfile} theme={theme} setTheme={setTheme} exportWorkspace={() => { const state = { version: 2, projects, activeProjectId, activeTabId, theme, profiles, sidebarCollapsed }; const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'terminal-workspace.json'; a.click(); URL.revokeObjectURL(url); }} importWorkspace={() => fileInputRef.current?.click()} showOnboarding={() => { setShowOnboarding(true); setOnboardingStep(0); setCurrentView('terminal'); }} resetState={resetWorkspace} />}
+          {currentView === 'settings' && (
+            <SettingsView 
+              profiles={profiles} 
+              updateProfile={updateProfile} 
+              theme={theme} 
+              setTheme={setTheme} 
+              themeVariant={themeVariant}
+              setThemeVariant={setThemeVariant}
+              terminalFontFamily={terminalFontFamily}
+              setTerminalFontFamily={setTerminalFontFamily}
+              terminalFontLigatures={terminalFontLigatures}
+              setTerminalFontLigatures={setTerminalFontLigatures}
+              exportWorkspace={() => { 
+                const state = { version: 2, projects, activeProjectId, activeTabId, theme, themeVariant, terminalFontFamily, terminalFontLigatures, profiles, sidebarCollapsed }; 
+                const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }); 
+                const url = URL.createObjectURL(blob); 
+                const a = document.createElement('a'); a.href = url; a.download = 'terminal-workspace.json'; a.click(); URL.revokeObjectURL(url); 
+              }} 
+              showOnboarding={() => { setShowOnboarding(true); setOnboardingStep(0); setCurrentView('terminal'); }} 
+              resetState={resetWorkspace} 
+            />
+          )}
         </div>
 
         <StatusBar projectName={activeProject?.name} tabTitle={activeTab?.title} profileName={resolvePaneConfig(activePane).profile.name} cwd={resolvePaneConfig(activePane).cwd || '~'} cols={activePaneId ? paneSizesMap[activePaneId]?.cols : undefined} rows={activePaneId ? paneSizesMap[activePaneId]?.rows : undefined} isConnected={Boolean(activePaneId)} />

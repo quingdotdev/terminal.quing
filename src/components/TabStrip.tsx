@@ -31,6 +31,7 @@ interface TabStripProps {
   setShowShellMenu: (show: boolean) => void;
   profiles: any[];
   theme: string;
+  themeVariant: 'light' | 'dark';
   onToggleTheme: () => void;
   onSetCurrentView: (view: 'terminal' | 'settings') => void;
   onShowPalette: (show: boolean) => void;
@@ -67,7 +68,7 @@ const TabStrip: React.FC<TabStripProps> = ({
   showShellMenu,
   setShowShellMenu,
   profiles,
-  theme,
+  themeVariant,
   onToggleTheme,
   onSetCurrentView,
   onShowPalette,
@@ -104,10 +105,11 @@ const TabStrip: React.FC<TabStripProps> = ({
             onDragEnd={() => setDraggingTabId(null)}
             onDoubleClick={() => onStartRenaming(t.id, t.title)}
             onContextMenu={(e) => onContextMenu(e, 'tab', t.id)}
-            onClick={() => onTabClick(t.id)}
+            onClick={() => { onSetCurrentView('terminal'); onTabClick(t.id); }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
+                onSetCurrentView('terminal');
                 onTabClick(t.id);
               }
             }}
@@ -195,6 +197,41 @@ const TabStrip: React.FC<TabStripProps> = ({
             )}
           </div>
         ))}
+
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onSetCurrentView('settings')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onSetCurrentView('settings');
+            }
+          }}
+          className={cn(
+            'h-full px-4 flex items-center gap-2 text-xs border-r border-[var(--cornflower)] transition-colors relative flex-shrink-0 app-region-no-drag cursor-pointer group focus:outline-none focus:bg-[var(--cornflower)]/40',
+            compactTabs ? 'min-w-[120px] max-w-[200px]' : 'min-w-max',
+            currentView === 'settings'
+              ? 'bg-[var(--cornflower)]/30 text-[var(--charcoal)]'
+              : 'text-[var(--charcoal)] opacity-40 hover:opacity-100 hover:bg-[var(--cornflower)]/20'
+          )}
+          title="settings"
+        >
+          <Settings size={12} className="text-[var(--charcoal)] opacity-70" />
+          <span className={cn('lowercase flex-1', compactTabs && 'truncate')}>settings</span>
+          {currentView === 'settings' && (
+            <div className="flex items-center gap-1">
+              <X
+                size={12}
+                className="hover:text-[var(--charcoal)] opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSetCurrentView('terminal');
+                }}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="relative flex-shrink-0 flex items-center h-10 app-region-no-drag border-r border-[var(--cornflower)]" ref={menuRef}>
@@ -242,7 +279,7 @@ const TabStrip: React.FC<TabStripProps> = ({
 
       <div className="flex items-center h-10 app-region-no-drag">
         <button onClick={onToggleTheme} className="px-3 h-10 hover:bg-[var(--cornflower)]/30 text-[var(--charcoal)] opacity-60 hover:opacity-100" title="toggle theme">
-          {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+          {themeVariant === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
         </button>
         <div className="px-4 flex gap-4 text-[var(--charcoal)] opacity-60">
           <button onClick={() => (window as any).terminalAPI.minimize()} className="hover:opacity-100 transition-opacity" title="minimize">

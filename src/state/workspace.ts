@@ -1,8 +1,10 @@
 import type { Profile, Project, TerminalTab, Pane, WorkspaceState } from './types';
-import { THEME_ORDER, type ThemeName } from './themes';
+import { THEME_FAMILIES, type ThemeFamily } from './themes';
 
 const STORAGE_KEY = 'workspace';
 const STORAGE_VERSION = 2;
+const DEFAULT_TERMINAL_FONT_FAMILY =
+  "'JetBrains Mono', 'Cascadia Mono', 'Cascadia Code', Consolas, 'Courier New', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace";
 
 /**
  * Default shell profiles provided by the application.
@@ -42,13 +44,13 @@ export const DEFAULT_PROFILES: Profile[] = [
   },
 ];
 
-const DEFAULT_THEME: ThemeName = 'dark';
+const DEFAULT_THEME: ThemeFamily = 'default';
 
 /**
  * Ensures a theme name is valid, otherwise returns the default.
  */
-const normalizeTheme = (value: any): ThemeName => {
-  return THEME_ORDER.includes(value) ? value : DEFAULT_THEME;
+const normalizeTheme = (value: any): ThemeFamily => {
+  return THEME_FAMILIES.includes(value) ? value : DEFAULT_THEME;
 };
 
 /**
@@ -161,12 +163,16 @@ export const normalizeWorkspace = (raw: any): WorkspaceState => {
   const activeProjectId = raw?.activeProjectId || safeProjects[0]?.id;
   const activeProject = safeProjects.find((p: any) => p.id === activeProjectId) || safeProjects[0];
   const activeTabId = raw?.activeTabId || activeProject?.tabs?.[0]?.id;
+  
   return {
     version: STORAGE_VERSION,
     projects: safeProjects,
     activeProjectId: activeProject?.id || activeProjectId,
     activeTabId: activeTabId || activeProject?.tabs?.[0]?.id,
     theme: normalizeTheme(raw?.theme),
+    themeVariant: (raw?.themeVariant === 'light' || raw?.themeVariant === 'dark') ? raw.themeVariant : 'dark',
+    terminalFontFamily: raw?.terminalFontFamily || DEFAULT_TERMINAL_FONT_FAMILY,
+    terminalFontLigatures: typeof raw?.terminalFontLigatures === 'boolean' ? raw.terminalFontLigatures : true,
     profiles,
     sidebarCollapsed: Boolean(raw?.sidebarCollapsed),
   };

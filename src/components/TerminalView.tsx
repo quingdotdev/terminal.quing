@@ -3,7 +3,26 @@ import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import 'xterm/css/xterm.css';
-import { XTERM_THEMES, type ThemeName } from '../state/themes';
+import { XTERM_THEMES, type ThemeFamily, type ThemeVariant } from '../state/themes';
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// A small, high-signal ligature set (similar to what many dev fonts provide).
+// This is used with xterm's canvas renderer via `registerCharacterJoiner`.
+const LIGATURE_SEQUENCES = [
+  '<!---', '<!--', '--->', '<---', '<--', '-->',
+  '<==>', '<===>', '<=>', '<==', '==>', '===>', '=>', '<=',
+  '>=', '>>=', '<<=', '>>', '<<', '>>>', '<<<',
+  '!==', '===', '!=', '==',
+  '<->', '<-->', '<!-->', '->', '<-',
+  ':::', '::', ':=', '=:',
+  '&&', '||',
+  '++', '+++', '--',
+  '/*', '*/', '//', '///',
+  '...', '..',
+].sort((a, b) => b.length - a.length);
+
+const LIGATURE_REGEX = new RegExp(LIGATURE_SEQUENCES.map(escapeRegExp).join('|'), 'g');
 
 /**
  * Public API for interacting with a TerminalView instance.
@@ -24,7 +43,10 @@ interface TerminalViewProps {
   cwd?: string;
   shell?: string;
   args?: string[];
-  theme: ThemeName;
+  theme: ThemeFamily;
+  themeVariant: ThemeVariant;
+  terminalFontFamily: string;
+  terminalFontLigatures: boolean;
   isActive: boolean;
   isVisible: boolean;
   onExit?: () => void;
@@ -45,6 +67,9 @@ const TerminalView: React.FC<TerminalViewProps> = ({
   shell,
   args,
   theme,
+  themeVariant,
+  terminalFontFamily,
+  terminalFontLigatures,
   isActive,
   isVisible,
   onExit,
@@ -56,6 +81,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
+  const joinerIdRef = useRef<number | null>(null);
   const isVisibleRef = useRef<boolean>(isVisible);
 
   // Sync visibility ref for the async init loop
@@ -71,12 +97,13 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     }
   }, [id, isVisible, onSizeChange]);
 
-  // Update xterm theme when application theme changes
+  // Update xterm options when props change
   useEffect(() => {
     if (xtermRef.current) {
-      xtermRef.current.options.theme = XTERM_THEMES[theme];
+      xtermRef.current.options.theme = XTERM_THEMES[theme][themeVariant];
+      xtermRef.current.options.fontFamily = terminalFontFamily;
     }
-  }, [theme]);
+  }, [theme, themeVariant, terminalFontFamily]);
 
   // Terminal Lifecycle Management
   useEffect(() => {
@@ -89,8 +116,8 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     const terminal = new Terminal({
       cursorBlink: true,
       fontSize: 14,
-      fontFamily: "'JetBrains Mono', monospace",
-      theme: XTERM_THEMES[theme],
+      fontFamily: terminalFontFamily,
+      theme: XTERM_THEMES[theme][themeVariant],
       allowProposedApi: true,
     });
 
@@ -197,11 +224,43 @@ const TerminalView: React.FC<TerminalViewProps> = ({
       window.removeEventListener('resize', handleResize);
       if (cleanupData) cleanupData();
       if (cleanupExit) cleanupExit();
+      if (joinerIdRef.current !== null) {
+        terminal.deregisterCharacterJoiner(joinerIdRef.current);
+        joinerIdRef.current = null;
+      }
       window.terminalAPI.kill(id);
       terminal.dispose();
       onDispose?.(id);
     };
   }, [id]);
+
+  // Toggle ligatures at runtime (terminal only)
+  useEffect(() => {
+    const terminal = xtermRef.current;
+    if (!terminal) return;
+
+    if (terminalFontLigatures) {
+      if (joinerIdRef.current === null) {
+        joinerIdRef.current = terminal.registerCharacterJoiner((text) => {
+          const ranges: [number, number][] = [];
+          let match: RegExpExecArray | null;
+          while ((match = LIGATURE_REGEX.exec(text)) !== null) {
+            ranges.push([match.index, match.index + match[0].length]);
+          }
+          LIGATURE_REGEX.lastIndex = 0;
+          return ranges;
+        });
+      }
+      terminal.refresh(0, Math.max(0, terminal.rows - 1));
+      return;
+    }
+
+    if (joinerIdRef.current !== null) {
+      terminal.deregisterCharacterJoiner(joinerIdRef.current);
+      joinerIdRef.current = null;
+      terminal.refresh(0, Math.max(0, terminal.rows - 1));
+    }
+  }, [terminalFontLigatures]);
 
   // Direct focus when tab becomes active
   useEffect(() => {
@@ -216,7 +275,12 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     <div
       ref={terminalRef}
       className="terminal-view w-full h-full p-2 overflow-hidden"
-      style={{ backgroundColor: XTERM_THEMES[theme].background }}
+      style={{ 
+        backgroundColor: XTERM_THEMES[theme][themeVariant].background,
+        fontFamily: terminalFontFamily,
+        fontVariantLigatures: terminalFontLigatures ? 'normal' : 'none',
+        fontFeatureSettings: terminalFontLigatures ? '"liga" 1, "calt" 1' : '"liga" 0, "calt" 0'
+      }}
     />
   );
 };
