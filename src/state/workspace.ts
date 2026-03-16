@@ -92,7 +92,7 @@ const normalizeTab = (tab: any, profiles: Profile[]): TerminalTab => {
   const paneSizes = Array.isArray(tab?.paneSizes) ? tab.paneSizes : [];
   const normalizedSizes =
     paneSizes.length === panes.length
-      ? paneSizes.map((v) => clamp(Number(v) || 0, 5, 95))
+      ? paneSizes.map((v: any) => clamp(Number(v) || 0, 5, 95))
       : panes.map(() => 100 / Math.max(1, panes.length));
   const activePaneId = tab?.activePaneId || panes[0]?.id;
   return {
@@ -131,7 +131,7 @@ export const normalizeWorkspace = (raw: any): WorkspaceState => {
     }, profiles),
   ];
   const activeProjectId = raw?.activeProjectId || safeProjects[0]?.id;
-  const activeProject = safeProjects.find((p) => p.id === activeProjectId) || safeProjects[0];
+  const activeProject = safeProjects.find((p: any) => p.id === activeProjectId) || safeProjects[0];
   const activeTabId = raw?.activeTabId || activeProject?.tabs?.[0]?.id;
   return {
     version: STORAGE_VERSION,
