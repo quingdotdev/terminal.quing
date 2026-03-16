@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, ChevronDown, Moon, Sun, Minimize2, Maximize2, X, GripVertical, Terminal as TerminalIcon, Columns } from 'lucide-react';
+import { Plus, ChevronDown, Moon, Sun, Minimize2, Maximize2, X, GripVertical, Terminal as TerminalIcon, Columns, Settings } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 interface TerminalTab {
@@ -40,6 +40,12 @@ interface TabStripProps {
   getSplitTitleParts: (tab: TerminalTab) => { title: string; color?: string }[];
 }
 
+/**
+ * TabStrip component containing the horizontal list of tabs,
+ * window controls, and the theme toggle.
+ * 
+ * Supports drag-and-drop reordering, renaming, and custom tab colors.
+ */
 const TabStrip: React.FC<TabStripProps> = ({
   tabs,
   activeTabId,
@@ -76,6 +82,8 @@ const TabStrip: React.FC<TabStripProps> = ({
         {tabs.map((t, idx) => (
           <div
             key={t.id}
+            role="button"
+            tabIndex={0}
             draggable
             onDragStart={(e) => {
               setDraggingTabId(t.id);
@@ -97,8 +105,14 @@ const TabStrip: React.FC<TabStripProps> = ({
             onDoubleClick={() => onStartRenaming(t.id, t.title)}
             onContextMenu={(e) => onContextMenu(e, 'tab', t.id)}
             onClick={() => onTabClick(t.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onTabClick(t.id);
+              }
+            }}
             className={cn(
-              'h-full px-4 flex items-center gap-2 text-xs border-r border-[var(--cornflower)] transition-colors relative flex-shrink-0 app-region-no-drag cursor-pointer group',
+              'h-full px-4 flex items-center gap-2 text-xs border-r border-[var(--cornflower)] transition-colors relative flex-shrink-0 app-region-no-drag cursor-pointer group focus:outline-none focus:bg-[var(--cornflower)]/40',
               compactTabs ? 'min-w-[120px] max-w-[200px]' : 'min-w-max',
               activeTabId === t.id && currentView === 'terminal'
                 ? 'bg-[var(--cornflower)]/30 text-[var(--charcoal)]'
@@ -155,6 +169,7 @@ const TabStrip: React.FC<TabStripProps> = ({
               />
             </div>
 
+            {/* Accent line for tab color */}
             <div
               className="absolute bottom-0 left-0 right-0 h-0.5 transition-colors duration-200"
               style={{
@@ -164,6 +179,7 @@ const TabStrip: React.FC<TabStripProps> = ({
               }}
             />
 
+            {/* Split tab accent gradient */}
             {t.panes.length > 1 && activeTabId === t.id && (
               <div
                 className="absolute bottom-0 left-0 right-0 h-0.5"
@@ -189,6 +205,7 @@ const TabStrip: React.FC<TabStripProps> = ({
           <ChevronDown size={14} />
         </button>
 
+        {/* New Tab Profile Menu */}
         {showShellMenu && (
           <div className="absolute top-10 right-0 w-64 bg-[var(--start)] border border-[var(--cornflower)] shadow-2xl z-[100] py-1">
             {profiles.map((profile, idx) => (
@@ -207,7 +224,7 @@ const TabStrip: React.FC<TabStripProps> = ({
             <div className="h-[1px] bg-[var(--cornflower)] my-1 mx-2" />
             <button onClick={() => { onSetCurrentView('settings'); setShowShellMenu(false); }} className="w-full px-4 py-2 text-xs text-left hover:bg-[var(--cornflower)] text-[var(--charcoal)] opacity-70 hover:opacity-100 flex items-center justify-between transition-colors">
               <div className="flex items-center gap-2">
-                <Maximize2 size={12} className="rotate-45" />
+                <Settings size={12} />
                 <span className="lowercase">settings</span>
               </div>
               <span className="text-[10px] opacity-50 uppercase">Ctrl+,</span>
@@ -228,9 +245,15 @@ const TabStrip: React.FC<TabStripProps> = ({
           {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
         </button>
         <div className="px-4 flex gap-4 text-[var(--charcoal)] opacity-60">
-          <Minimize2 size={14} className="cursor-pointer hover:opacity-100" onClick={() => (window as any).terminalAPI.minimize()} />
-          <Maximize2 size={14} className="cursor-pointer hover:opacity-100" onClick={() => (window as any).terminalAPI.maximize()} />
-          <X size={14} className="cursor-pointer hover:opacity-100" onClick={() => (window as any).terminalAPI.close()} />
+          <button onClick={() => (window as any).terminalAPI.minimize()} className="hover:opacity-100 transition-opacity" title="minimize">
+            <Minimize2 size={14} />
+          </button>
+          <button onClick={() => (window as any).terminalAPI.maximize()} className="hover:opacity-100 transition-opacity" title="maximize">
+            <Maximize2 size={14} />
+          </button>
+          <button onClick={() => (window as any).terminalAPI.close()} className="hover:opacity-100 transition-opacity" title="close">
+            <X size={14} />
+          </button>
         </div>
       </div>
     </div>

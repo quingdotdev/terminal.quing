@@ -22,6 +22,9 @@ interface SettingsViewProps {
   resetState: () => void;
 }
 
+/**
+ * Settings view for configuring profiles, appearance, and workspace management.
+ */
 const SettingsView: React.FC<SettingsViewProps> = ({
   profiles,
   updateProfile,
@@ -36,6 +39,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     <div className="absolute inset-0 p-8 overflow-y-auto bg-[var(--start)] z-20">
       <h2 className="text-xl font-bold mb-6 text-[var(--charcoal)] lowercase text-opacity-100">settings</h2>
       <div className="max-w-2xl space-y-8">
+        {/* Profile Configuration Section */}
         <section>
           <h3 className="text-sm font-semibold mb-4 text-[var(--charcoal)] opacity-50 uppercase tracking-wider">profiles</h3>
           <div className="space-y-3">
@@ -72,6 +76,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({
             ))}
           </div>
         </section>
+
+        {/* Theme/Appearance Section */}
         <section>
           <h3 className="text-sm font-semibold mb-4 text-[var(--charcoal)] opacity-50 uppercase tracking-wider">appearance</h3>
           <div className="flex gap-2">
@@ -89,6 +95,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({
             ))}
           </div>
         </section>
+
+        {/* Workspace Management Section */}
         <section>
           <h3 className="text-sm font-semibold mb-4 text-[var(--charcoal)] opacity-50 uppercase tracking-wider">workspace</h3>
           <div className="flex gap-2">
@@ -106,6 +114,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({
             </button>
           </div>
         </section>
+
+        {/* App Help / Maintenance Section */}
         <section>
           <h3 className="text-sm font-semibold mb-4 text-[var(--charcoal)] opacity-50 uppercase tracking-wider">help</h3>
           <div className="flex gap-2">

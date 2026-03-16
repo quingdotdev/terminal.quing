@@ -4,6 +4,9 @@ import { THEME_ORDER, type ThemeName } from './themes';
 const STORAGE_KEY = 'workspace';
 const STORAGE_VERSION = 2;
 
+/**
+ * Default shell profiles provided by the application.
+ */
 export const DEFAULT_PROFILES: Profile[] = [
   {
     id: 'powershell',
@@ -41,12 +44,21 @@ export const DEFAULT_PROFILES: Profile[] = [
 
 const DEFAULT_THEME: ThemeName = 'dark';
 
+/**
+ * Ensures a theme name is valid, otherwise returns the default.
+ */
 const normalizeTheme = (value: any): ThemeName => {
   return THEME_ORDER.includes(value) ? value : DEFAULT_THEME;
 };
 
+/**
+ * Restricts a number to be within a specific range.
+ */
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
+/**
+ * Ensures profiles list is valid and contains at least one editable custom profile.
+ */
 const normalizeProfiles = (profiles?: Profile[]) => {
   const base = Array.isArray(profiles) && profiles.length > 0 ? profiles : DEFAULT_PROFILES;
   const normalized = base.map((p) => ({
@@ -64,12 +76,18 @@ const normalizeProfiles = (profiles?: Profile[]) => {
   return normalized;
 };
 
+/**
+ * Attempts to find a profile ID that matches a given shell executable path.
+ */
 const findProfileIdForShell = (profiles: Profile[], shell?: string) => {
   if (!shell) return profiles[0]?.id;
   const match = profiles.find((p) => p.shell.toLowerCase() === shell.toLowerCase());
   return match?.id || profiles.find((p) => p.editable)?.id || profiles[0]?.id;
 };
 
+/**
+ * Normalizes a Pane object, ensuring all required fields are present.
+ */
 const normalizePane = (pane: any, tab: TerminalTab, profiles: Profile[]): Pane => {
   const shell = pane?.shell || tab?.panes?.[0]?.shell || 'powershell.exe';
   const profileId = pane?.profileId || findProfileIdForShell(profiles, shell);
@@ -85,6 +103,9 @@ const normalizePane = (pane: any, tab: TerminalTab, profiles: Profile[]): Pane =
   };
 };
 
+/**
+ * Normalizes a Tab object, ensuring panes and sizes are consistent.
+ */
 const normalizeTab = (tab: any, profiles: Profile[]): TerminalTab => {
   const panes = (Array.isArray(tab?.panes) ? tab.panes : [{ id: tab?.id, shell: tab?.shell }]).map((p: any) =>
     normalizePane(p, tab, profiles)
@@ -105,6 +126,9 @@ const normalizeTab = (tab: any, profiles: Profile[]): TerminalTab => {
   };
 };
 
+/**
+ * Normalizes a Project object.
+ */
 const normalizeProject = (project: any, profiles: Profile[]): Project => {
   const tabs = Array.isArray(project?.tabs) ? project.tabs : [];
   return {
@@ -114,6 +138,10 @@ const normalizeProject = (project: any, profiles: Profile[]): Project => {
   };
 };
 
+/**
+ * Orchestrates the normalization of the entire workspace state.
+ * Handles migration from old versions and provides defaults for missing data.
+ */
 export const normalizeWorkspace = (raw: any): WorkspaceState => {
   const profiles = normalizeProfiles(raw?.profiles);
   const projects = Array.isArray(raw?.projects) ? raw.projects.map((p: any) => normalizeProject(p, profiles)) : [];
@@ -144,6 +172,10 @@ export const normalizeWorkspace = (raw: any): WorkspaceState => {
   };
 };
 
+/**
+ * Loads the workspace state from localStorage.
+ * Includes support for legacy flat storage keys.
+ */
 export const loadWorkspace = (): WorkspaceState => {
   if (typeof window === 'undefined') {
     return normalizeWorkspace({});
@@ -157,6 +189,8 @@ export const loadWorkspace = (): WorkspaceState => {
       return normalizeWorkspace({});
     }
   }
+  
+  // Legacy migration logic
   const legacyProjects = localStorage.getItem('projects');
   if (legacyProjects) {
     try {
@@ -175,6 +209,9 @@ export const loadWorkspace = (): WorkspaceState => {
   return normalizeWorkspace({});
 };
 
+/**
+ * Persists the workspace state to localStorage.
+ */
 export const saveWorkspace = (state: WorkspaceState) => {
   if (typeof window === 'undefined') return;
   try {

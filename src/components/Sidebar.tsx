@@ -24,6 +24,10 @@ interface SidebarProps {
   onRenameProject: (id: string) => void;
 }
 
+/**
+ * Sidebar component for managing projects.
+ * Supports collapsing, hovering expansion, renaming, and project switching.
+ */
 const Sidebar: React.FC<SidebarProps> = ({
   collapsed,
   hovered,
@@ -63,11 +67,19 @@ const Sidebar: React.FC<SidebarProps> = ({
           {projects.map((p, idx) => (
             <div
               key={p.id}
+              role="button"
+              tabIndex={0}
               onDoubleClick={() => (!collapsed || hovered) && onStartRenaming(p.id, p.name)}
               onContextMenu={(e) => onContextMenu(e, p.id)}
               onClick={() => onProjectClick(p.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onProjectClick(p.id);
+                }
+              }}
               className={cn(
-                'w-full flex items-center justify-between gap-2 py-2 text-sm rounded-sm transition-colors text-left cursor-pointer group',
+                'w-full flex items-center justify-between gap-2 py-2 text-sm rounded-sm transition-colors text-left cursor-pointer group focus:outline-none focus:bg-[var(--cornflower)]/30',
                 collapsed && !hovered ? 'justify-center px-0' : 'justify-between px-3',
                 activeProjectId === p.id ? 'bg-[var(--cornflower)] text-[var(--charcoal)]' : 'hover:bg-[var(--cornflower)]/50'
               )}

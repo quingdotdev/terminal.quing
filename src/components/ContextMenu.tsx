@@ -30,6 +30,10 @@ interface ContextMenuProps {
   presetColors: { name: string; value: string | undefined }[];
 }
 
+/**
+ * Universal context menu component.
+ * Displays different actions based on the `type` prop (project, tab, or terminal).
+ */
 const ContextMenu: React.FC<ContextMenuProps> = ({
   x,
   y,
@@ -69,9 +73,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
         left: Math.min(x, window.innerWidth - 260),
       }}
     >
+      {/* Tab Context Menu */}
       {type === 'tab' ? (
         <>
-          <div
+          <button
             className="w-full px-4 py-2 text-xs text-left hover:bg-[var(--cornflower)] flex flex-col group cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
@@ -98,7 +103,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 ))}
               </div>
             )}
-          </div>
+          </button>
           <button
             onClick={() => onStartRenaming(targetId, currentTab?.title || '')}
             className="w-full px-4 py-2 text-xs text-left hover:bg-[var(--cornflower)] flex items-center gap-3"
@@ -115,7 +120,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             </button>
           )}
 
-          <div
+          <button
             className="w-full px-4 py-2 text-xs text-left hover:bg-[var(--cornflower)] flex flex-col group cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
@@ -148,7 +153,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 </button>
               </div>
             )}
-          </div>
+          </button>
 
           <div className="flex border-b border-[var(--cornflower)]/30">
             <button onClick={() => onMoveTab('left')} className="flex-1 px-4 py-2 text-xs text-left hover:bg-[var(--cornflower)] flex items-center gap-3">
@@ -169,6 +174,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
           </button>
         </>
       ) : type === 'terminal' ? (
+        /* Terminal Context Menu */
         <>
           <button onClick={onCopy} className="w-full px-4 py-2 text-xs text-left hover:bg-[var(--cornflower)] flex items-center gap-3">
             <Clipboard size={14} /> Copy
@@ -184,6 +190,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
           </button>
         </>
       ) : (
+        /* Project Context Menu */
         <>
           <button onClick={() => onStartRenaming(targetId, currentProject?.name || '')} className="w-full px-4 py-2 text-xs text-left hover:bg-[var(--cornflower)] flex items-center gap-3">
             <Edit3 size={14} /> Rename project

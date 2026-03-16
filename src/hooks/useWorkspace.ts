@@ -5,6 +5,12 @@ import type { ThemeName } from '../state/themes';
 
 const randomId = () => Math.random().toString(36).slice(2, 9);
 
+/**
+ * Custom hook to manage the terminal workspace state.
+ * Handles projects, tabs, panes, profiles, themes, and persistence to localStorage.
+ * 
+ * @returns An object containing workspace state and functions to manipulate it.
+ */
 export const useWorkspace = () => {
   const initialWorkspace = loadWorkspace();
 
@@ -16,8 +22,10 @@ export const useWorkspace = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(initialWorkspace.sidebarCollapsed);
   const [tabActivity, setTabActivity] = useState<Record<string, boolean>>({});
 
+  // Reference to terminal API instances for direct manipulation (focus, find, etc.)
   const terminalApis = useRef<Map<string, any>>(new Map());
 
+  // Automatically save workspace changes to localStorage
   useEffect(() => {
     saveWorkspace({
       version: 2,
@@ -30,10 +38,16 @@ export const useWorkspace = () => {
     });
   }, [projects, activeProjectId, activeTabId, theme, profiles, sidebarCollapsed]);
 
+  /**
+   * Retrieves a profile by ID or returns a default fallback.
+   */
   const getProfileById = useCallback((profileId?: string) => {
     return profiles.find((p) => p.id === profileId) || profiles[0] || DEFAULT_PROFILES[0];
   }, [profiles]);
 
+  /**
+   * Sets the active tab and clears its activity indicator.
+   */
   const setActiveTab = useCallback((tabId: string) => {
     setActiveTabId(tabId);
     setTabActivity((prev) => {
@@ -43,6 +57,10 @@ export const useWorkspace = () => {
     });
   }, []);
 
+  /**
+   * Activates a specific pane within a tab and project.
+   * Optionally focuses the terminal.
+   */
   const activatePane = useCallback((projectId: string, tabId: string, paneId: string, focus = true) => {
     setProjects((prev) =>
       prev.map((p) => {
@@ -63,6 +81,9 @@ export const useWorkspace = () => {
     }
   }, []);
 
+  /**
+   * Adds a new tab to a project using a specific profile.
+   */
   const addTab = useCallback((projectId: string, profileId?: string) => {
     const profile = getProfileById(profileId);
     const tabId = randomId();
@@ -88,6 +109,9 @@ export const useWorkspace = () => {
     setActiveTab(tabId);
   }, [getProfileById, setActiveTab]);
 
+  /**
+   * Splits a tab by adding a new pane or moving panes from another tab.
+   */
   const splitTab = useCallback((projectId: string, targetTabId: string, sourceTabId?: string) => {
     setProjects((prev) =>
       prev.map((p) => {
@@ -103,6 +127,7 @@ export const useWorkspace = () => {
         let newTabs = [...p.tabs];
 
         if (sourceTabId) {
+          // Move panes from sourceTab to targetTab
           const sourceTab = p.tabs.find((t) => t.id === sourceTabId);
           if (sourceTab) {
             const sourcePanes = sourceTab.panes.map((pane) => ({
@@ -114,6 +139,7 @@ export const useWorkspace = () => {
             newTabs = newTabs.filter((t) => t.id !== sourceTabId);
           }
         } else {
+          // Add a fresh pane to targetTab
           const sourcePane = targetTab.panes.find((pane) => pane.id === targetTab.activePaneId) || targetTab.panes[targetTab.panes.length - 1];
           const profile = getProfileById(sourcePane?.profileId);
           const newPane: Pane = {
@@ -142,6 +168,9 @@ export const useWorkspace = () => {
     setActiveTab(targetTabId);
   }, [getProfileById, setActiveTab]);
 
+  /**
+   * Explodes a split tab back into individual tabs.
+   */
   const unsplitTab = useCallback((projectId: string, tabId: string) => {
     setProjects((prev) =>
       prev.map((p) => {
@@ -190,6 +219,9 @@ export const useWorkspace = () => {
     );
   }, []);
 
+  /**
+   * Reorders a tab within its project.
+   */
   const moveTab = useCallback((projectId: string, tabId: string, direction: 'left' | 'right') => {
     setProjects((prev) =>
       prev.map((p) => {
@@ -206,6 +238,9 @@ export const useWorkspace = () => {
     );
   }, []);
 
+  /**
+   * Drag-and-drop tab reordering.
+   */
   const reorderTabs = useCallback((projectId: string, fromId: string, toId: string) => {
     if (fromId === toId) return;
     setProjects((prev) =>
@@ -222,6 +257,9 @@ export const useWorkspace = () => {
     );
   }, []);
 
+  /**
+   * Sets the theme color for a specific tab.
+   */
   const setTabColor = useCallback((projectId: string, tabId: string, color?: string) => {
     setProjects((prev) =>
       prev.map((p) => {
@@ -241,6 +279,9 @@ export const useWorkspace = () => {
     );
   }, []);
 
+  /**
+   * Closes a tab. If it's the active tab, switch to another.
+   */
   const removeTab = useCallback((projectId: string, tabId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     setProjects((prev) =>
@@ -255,6 +296,10 @@ export const useWorkspace = () => {
     );
   }, [activeTabId, setActiveTab]);
 
+  /**
+   * Closes a single pane within a tab. 
+   * If it's the last pane, the tab itself is removed.
+   */
   const removePane = useCallback((projectId: string, tabId: string, paneId: string) => {
     setProjects((prev) => {
       const updated = prev.map((p) => {
@@ -280,6 +325,9 @@ export const useWorkspace = () => {
     });
   }, []);
 
+  /**
+   * Deletes a project.
+   */
   const removeProject = useCallback((projectId: string) => {
     setProjects((prev) => {
       const remaining = prev.filter((p) => p.id !== projectId);
@@ -291,6 +339,9 @@ export const useWorkspace = () => {
     });
   }, [activeProjectId, setActiveTab]);
 
+  /**
+   * Clones an existing tab.
+   */
   const duplicateTab = useCallback((projectId: string, tabId: string) => {
     const newTabId = randomId();
     setProjects((prev) =>
@@ -317,6 +368,9 @@ export const useWorkspace = () => {
     setActiveTab(newTabId);
   }, [setActiveTab]);
 
+  /**
+   * Scaffolds a new project with a default tab.
+   */
   const addProject = useCallback(() => {
     const id = randomId();
     const tabId = `t-${id}-1`;
@@ -349,10 +403,16 @@ export const useWorkspace = () => {
     setActiveTab(tabId);
   }, [getProfileById, projects.length, setActiveTab]);
 
+  /**
+   * Updates a project's display name.
+   */
   const handleRenameProject = useCallback((id: string, name: string) => {
     setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, name: name || p.name } : p)));
   }, []);
 
+  /**
+   * Updates a tab's display name.
+   */
   const handleRenameTab = useCallback((projectId: string, tabId: string, title: string) => {
     setProjects((prev) =>
       prev.map((p) => {
@@ -370,6 +430,9 @@ export const useWorkspace = () => {
     );
   }, []);
 
+  /**
+   * Wipes all local state and returns to a fresh workspace.
+   */
   const resetWorkspace = useCallback(() => {
     localStorage.clear();
     const fresh = normalizeWorkspace({});
@@ -381,10 +444,16 @@ export const useWorkspace = () => {
     setSidebarCollapsed(fresh.sidebarCollapsed);
   }, []);
 
+  /**
+   * Modifies a shell profile (path, args, cwd).
+   */
   const updateProfile = useCallback((id: string, updates: Partial<Profile>) => {
     setProfiles((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
   }, []);
 
+  /**
+   * Replaces current workspace with data from an imported JSON file.
+   */
   const importWorkspace = useCallback((data: any) => {
     const normalized = normalizeWorkspace(data);
     setProjects(normalized.projects);
@@ -395,6 +464,9 @@ export const useWorkspace = () => {
     setSidebarCollapsed(normalized.sidebarCollapsed);
   }, []);
 
+  /**
+   * Marks a tab as having "activity" (e.g., terminal output) if it's not currently focused.
+   */
   const handleActivity = useCallback((paneId: string, projects: Project[], activeTab: TerminalTab | undefined, activePaneId: string | undefined, currentView: string) => {
     const active = activeTab?.panes.some((p) => p.id === paneId);
     if (active && activePaneId === paneId && currentView === 'terminal') return;

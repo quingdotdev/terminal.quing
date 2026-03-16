@@ -10,6 +10,10 @@ interface StatusBarProps {
   isConnected?: boolean;
 }
 
+/**
+ * Status bar component displayed at the bottom of the window.
+ * Shows metadata about the currently active terminal session.
+ */
 const StatusBar: React.FC<StatusBarProps> = ({
   projectName,
   tabTitle,

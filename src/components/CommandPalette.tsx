@@ -20,6 +20,10 @@ interface CommandPaletteProps {
   onClose: () => void;
 }
 
+/**
+ * Command Palette component for quick keyboard-driven access to application features.
+ * Supports fuzzy-like searching through actions and keyboard navigation (Up/Down/Enter/Esc).
+ */
 const CommandPalette: React.FC<CommandPaletteProps> = ({
   inputRef,
   search,

@@ -14,6 +14,9 @@ interface OnboardingProps {
   onComplete: () => void;
 }
 
+/**
+ * Steps for the onboarding tour.
+ */
 export const onboardingSteps: OnboardingStep[] = [
   {
     title: 'welcome to terminal by Quing',
@@ -49,6 +52,9 @@ export const onboardingSteps: OnboardingStep[] = [
   },
 ];
 
+/**
+ * Onboarding component that displays a multi-step welcome tour.
+ */
 const Onboarding: React.FC<OnboardingProps> = ({ step, onStepChange, onComplete }) => {
   return (
     <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-md">
@@ -68,6 +74,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ step, onStepChange, onComplete 
         </div>
 
         <div className="flex items-center justify-between w-full mt-auto">
+          {/* Progress indicators */}
           <div className="flex gap-1">
             {onboardingSteps.map((_, idx) => (
               <div

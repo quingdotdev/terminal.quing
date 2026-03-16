@@ -23,6 +23,12 @@ interface KeyboardShortcutsProps {
   addTab: (projectId: string, profileId: string) => void;
 }
 
+/**
+ * Custom hook to register global keyboard shortcuts for the application.
+ * Handles common operations like switching tabs, projects, opening the command palette, etc.
+ * 
+ * @param props - State setters and handlers needed for shortcut actions.
+ */
 export const useKeyboardShortcuts = ({
   setSidebarCollapsed,
   setShowPalette,
@@ -47,11 +53,14 @@ export const useKeyboardShortcuts = ({
 }: KeyboardShortcutsProps) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl+Alt+B: Toggle Sidebar
       if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'b') {
         event.preventDefault();
         setSidebarCollapsed((prev) => !prev);
         return;
       }
+
+      // Ctrl+Shift+P: Open Command Palette
       if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'p') {
         event.preventDefault();
         setShowPalette((prev) => !prev);
@@ -59,11 +68,15 @@ export const useKeyboardShortcuts = ({
         setPaletteIndex(0);
         return;
       }
+
+      // Stop processing global shortcuts if focus is in an input (unless palette is open)
       const target = event.target as HTMLElement | null;
       const isEditable = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
       if (isEditable && !showPalette) {
         return;
       }
+
+      // Ctrl+Shift+C / Ctrl+Shift+V: Terminal Copy/Paste
       if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'c') {
         event.preventDefault();
         handleCopy();
@@ -74,11 +87,15 @@ export const useKeyboardShortcuts = ({
         handlePaste();
         return;
       }
+
+      // Ctrl+F: Find
       if (event.ctrlKey && event.key.toLowerCase() === 'f') {
         event.preventDefault();
         setShowFind(true);
         return;
       }
+
+      // Ctrl+(Shift)+Tab: Cycle Tabs
       if (event.ctrlKey && event.key === 'Tab') {
         event.preventDefault();
         if (!activeProject) return;
@@ -88,6 +105,8 @@ export const useKeyboardShortcuts = ({
         if (activeProject.tabs[wrap]) setActiveTab(activeProject.tabs[wrap].id);
         return;
       }
+
+      // Ctrl+Alt+Arrows: Cycle Panes within split tab
       if (event.ctrlKey && event.altKey && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
         event.preventDefault();
         if (!activeTab) return;
@@ -100,14 +119,20 @@ export const useKeyboardShortcuts = ({
         if (pane) activatePane(activeProjectId, activeTab.id, pane.id, true);
         return;
       }
+
+      // Palette Navigation
       if (showPalette) {
         if (event.key === 'Escape') setShowPalette(() => false);
         return;
       }
+
+      // Ctrl+, : Settings
       if (event.ctrlKey && event.key === ',') {
         event.preventDefault();
         setCurrentView('settings');
       }
+
+      // Alt+1-9: Switch Projects
       if (event.altKey && !event.ctrlKey && /^[1-9]$/.test(event.key)) {
         event.preventDefault();
         const index = parseInt(event.key, 10) - 1;
@@ -117,6 +142,8 @@ export const useKeyboardShortcuts = ({
           setCurrentView('terminal');
         }
       }
+
+      // Ctrl+1-9: Switch Tabs
       if (event.ctrlKey && !event.shiftKey && /^[1-9]$/.test(event.key)) {
         event.preventDefault();
         const activeProj = projects.find((p) => p.id === activeProjectId);
@@ -128,6 +155,8 @@ export const useKeyboardShortcuts = ({
           }
         }
       }
+
+      // Ctrl+Shift+1-3: New Terminal from quick profile
       if (event.ctrlKey && event.shiftKey && (event.code.startsWith('Digit') || /^[1-9]$/.test(event.key) || /^[!@#$%^&*()]$/.test(event.key))) {
         const digitMatch = event.code.match(/Digit(\d)/);
         const digit = digitMatch ? parseInt(digitMatch[1], 10) : null;
@@ -137,6 +166,7 @@ export const useKeyboardShortcuts = ({
         }
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [

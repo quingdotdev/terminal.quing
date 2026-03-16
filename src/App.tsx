@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
 import {
   Plus,
-  Maximize2,
+  Settings,
   Moon,
   Sun,
   Search,
@@ -35,7 +35,12 @@ const PRESET_COLORS = [
   { name: 'pink', value: '#EC4899' },
 ];
 
+/**
+ * Root Application Component.
+ * Orchestrates the overall layout, workspace state, keyboard shortcuts, and view switching.
+ */
 const App: React.FC = () => {
+  // Centralized workspace management logic
   const {
     projects,
     setProjects,
@@ -71,6 +76,7 @@ const App: React.FC = () => {
     handleActivity,
   } = useWorkspace();
 
+  // Local UI state
   const [currentView, setCurrentView] = useState<'terminal' | 'settings'>('terminal');
   const [showShellMenu, setShowShellMenu] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; type: 'project' | 'tab' | 'terminal'; targetId: string } | null>(null);
@@ -90,6 +96,7 @@ const App: React.FC = () => {
   const [paneSizesMap, setPaneSizesMap] = useState<Record<string, { cols: number; rows: number }>>({});
   const [draggingTabId, setDraggingTabId] = useState<string | null>(null);
 
+  // Refs for DOM manipulation and component communication
   const menuRef = useRef<HTMLDivElement>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const paletteInputRef = useRef<HTMLInputElement>(null);
@@ -100,15 +107,20 @@ const App: React.FC = () => {
 
   const quickProfiles = profiles.slice(0, 3);
 
+  // Apply theme to document root
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  // Derived active state
   const activeProject = projects.find((p) => p.id === activeProjectId) || projects[0];
   const activeTab = activeProject?.tabs.find((t) => t.id === activeTabId) || activeProject?.tabs[0];
   const activePaneId = activeTab?.activePaneId || activeTab?.panes?.[0]?.id;
   const activePane = activeTab?.panes.find((p) => p.id === activePaneId) || activeTab?.panes?.[0];
 
+  /**
+   * Resolves final shell configuration for a pane based on its assigned profile.
+   */
   const resolvePaneConfig = useCallback((pane?: any) => {
     const profile = getProfileById(pane?.profileId);
     return {
@@ -119,6 +131,9 @@ const App: React.FC = () => {
     };
   }, [getProfileById]);
 
+  /**
+   * Handlers for terminal selection and clipboard operations.
+   */
   const handleCopy = useCallback(() => {
     if (!activePaneId) return;
     const api = terminalApis.current.get(activePaneId);
@@ -138,6 +153,7 @@ const App: React.FC = () => {
     terminalApis.current.get(activePaneId)?.selectAll();
   }, [activePaneId, terminalApis]);
 
+  // Global Keyboard Shortcuts
   useKeyboardShortcuts({
     setSidebarCollapsed,
     setShowPalette,
@@ -161,6 +177,9 @@ const App: React.FC = () => {
     addTab,
   });
 
+  /**
+   * List of actions available in the Command Palette.
+   */
   const paletteActions = useMemo(() => {
     const actions: Array<{ label: string; icon: any; action: () => void; category: string }> = [];
     profiles.forEach((profile) => {
@@ -197,7 +216,7 @@ const App: React.FC = () => {
     });
     actions.push({
       label: 'open settings',
-      icon: <Maximize2 size={14} className="rotate-45" />,
+      icon: <Settings size={14} />,
       action: () => { setCurrentView('settings'); setShowPalette(false); },
       category: 'app',
     });
@@ -225,6 +244,10 @@ const App: React.FC = () => {
     return actions.filter((a) => a.label.toLowerCase().includes(paletteSearch.toLowerCase()));
   }, [profiles, activeProjectId, activeTab, theme, projects, activeTabId, sidebarCollapsed, paletteSearch, addTab, splitTab, unsplitTab, setTheme, setCurrentView]);
 
+  /**
+   * Pane Resizing Logic.
+   * Uses a persistent resize observer and mouse event listeners.
+   */
   const handleResizeMove = useCallback((event: MouseEvent) => {
     if (!resizeRef.current) return;
     const { tabId, index, startX, startSizes, containerWidth } = resizeRef.current;
@@ -252,6 +275,9 @@ const App: React.FC = () => {
     return () => { window.removeEventListener('mousemove', handleResizeMove); window.removeEventListener('mouseup', handleResizeEnd); };
   }, [handleResizeMove, handleResizeEnd]);
 
+  /**
+   * Global click-outside listener for closing menus.
+   */
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -262,6 +288,9 @@ const App: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  /**
+   * Evaluates if tabs should be rendered in "compact" mode based on count and width.
+   */
   useLayoutEffect(() => {
     const element = tabStripRef.current;
     if (!element) return;
@@ -276,6 +305,9 @@ const App: React.FC = () => {
     return () => { cancelAnimationFrame(raf); resizeObserver.disconnect(); window.removeEventListener('resize', evaluate); };
   }, [projects, activeProjectId, sidebarCollapsed, sidebarHovered, activeProject]);
 
+  /**
+   * Helper to render the label for a tab, considering split panes and compact mode.
+   */
   const renderTabLabel = (tab: TerminalTab) => {
     const parts = (tab.panes || []).map((p) => ({ title: p.title || tab.title || 'terminal', color: p.color }));
     if (tab.panes.length <= 1) return <span>{tab.title}</span>;
@@ -296,6 +328,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen w-full bg-[var(--start)] text-[var(--charcoal)] transition-colors duration-200">
+      {/* Overlay UI components */}
       {showOnboarding && <Onboarding step={onboardingStep} onStepChange={setOnboardingStep} onComplete={() => { localStorage.setItem('hasCompletedOnboarding', 'true'); setShowOnboarding(false); }} />}
       {contextMenu && (
         <ContextMenu
@@ -333,13 +366,38 @@ const App: React.FC = () => {
         />
       )}
       {showPalette && <CommandPalette inputRef={paletteInputRef} search={paletteSearch} onSearchChange={setPaletteSearch} actions={paletteActions} activeIndex={paletteIndex} onActionIndexChange={setPaletteIndex} onRunAction={(idx) => paletteActions[idx]?.action()} onClose={() => setShowPalette(false)} />}
+
+      {/* Main Layout */}
       <Sidebar collapsed={sidebarCollapsed} hovered={sidebarHovered} onHoverChange={setSidebarHovered} projects={projects} activeProjectId={activeProjectId} onProjectClick={(id) => { setActiveProjectId(id); const p = projects.find(proj => proj.id === id); if (p && p.tabs.length > 0) setActiveTab(p.tabs[0].id); setCurrentView('terminal'); }} onAddProject={addProject} onContextMenu={(e, id) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, type: 'project', targetId: id }); setShowColorSubmenu(false); setShowSplitSubmenu(false); }} onStartRenaming={(id, val) => { setEditingId(id); setEditValue(val); setContextMenu(null); }} editingId={editingId} editValue={editValue} onEditValueChange={setEditValue} onRenameProject={(id) => { handleRenameProject(id, editValue); setEditingId(null); }} />
+      
       <main className="flex-1 flex flex-col min-w-0 h-full relative">
         <TabStrip tabs={activeProject?.tabs || []} activeTabId={activeTabId} currentView={currentView} compactTabs={compactTabs} onTabClick={setActiveTab} onRemoveTab={(id, e) => removeTab(activeProjectId, id, e)} onAddTab={(profileId) => addTab(activeProjectId, profileId)} onReorderTabs={(from, to) => reorderTabs(activeProjectId, from, to)} onStartRenaming={(id, val) => { setEditingId(id); setEditValue(val); setContextMenu(null); }} onContextMenu={(e, type, id) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, type, targetId: id }); setShowColorSubmenu(false); setShowSplitSubmenu(false); }} draggingTabId={draggingTabId} setDraggingTabId={setDraggingTabId} editingId={editingId} editValue={editValue} onEditValueChange={setEditValue} onRenameTab={(id) => { handleRenameTab(activeProjectId, id, editValue); setEditingId(null); }} tabActivity={tabActivity} showShellMenu={showShellMenu} setShowShellMenu={setShowShellMenu} profiles={profiles} theme={theme} onToggleTheme={() => setTheme(THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length])} onSetCurrentView={setCurrentView} onShowPalette={setShowPalette} tabStripRef={tabStripRef} menuRef={menuRef} renderTabLabel={renderTabLabel} getSplitTitleParts={(tab) => (tab.panes || []).map((p: any) => ({ title: p.title || tab.title || 'terminal', color: p.color }))} />
+        
         <div className="flex-1 relative bg-[var(--start)] overflow-hidden">
-          <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) { const reader = new FileReader(); reader.onload = () => { try { importWorkspace(JSON.parse(String(reader.result || '{}'))); setCurrentView('terminal'); } catch { alert('invalid workspace file'); } }; reader.readAsText(file); } if (fileInputRef.current) fileInputRef.current.value = ''; }} />
+          {/* Hidden input for workspace import */}
+          <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const result = reader.result;
+                if (typeof result !== 'string') return;
+                try {
+                  importWorkspace(JSON.parse(result || '{}'));
+                  setCurrentView('terminal');
+                } catch {
+                  alert('invalid workspace file');
+                }
+              };
+              reader.readAsText(file);
+            }
+            if (fileInputRef.current) fileInputRef.current.value = '';
+          }} />
+
+          {/* Terminal View Container */}
           <div className="absolute inset-0">
             {showFind && currentView === 'terminal' && <TerminalSearchBar value={findQuery} onChange={setFindQuery} onNext={() => terminalApis.current.get(activePaneId!)?.findNext(findQuery)} onPrev={() => terminalApis.current.get(activePaneId!)?.findPrevious(findQuery)} onClose={() => { terminalApis.current.get(activePaneId!)?.clearSearch(); setShowFind(false); }} />}
+            
             {projects.map((project) => project.tabs.map((tab) => {
               const isVisible = project.id === activeProjectId && tab.id === activeTabId && currentView === 'terminal';
               const sizes = tab.paneSizes && tab.paneSizes.length === tab.panes.length ? tab.paneSizes : tab.panes.map(() => 100 / Math.max(1, tab.panes.length));
@@ -350,9 +408,29 @@ const App: React.FC = () => {
                     const isActivePane = tab.activePaneId ? tab.activePaneId === pane.id : idx === 0;
                     return (
                       <React.Fragment key={pane.id}>
-                        <div className={cn('h-full relative overflow-hidden', isActivePane && 'pane-active')} style={{ flex: `0 0 ${sizes[idx]}%` }} onClick={() => activatePane(project.id, tab.id, pane.id, true)} onContextMenu={(e) => { activatePane(project.id, tab.id, pane.id, false); e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, type: 'terminal', targetId: pane.id }); setShowColorSubmenu(false); setShowSplitSubmenu(false); }}>
+                        <div
+                          role="button"
+                          tabIndex={isActivePane ? -1 : 0}
+                          className={cn('h-full relative overflow-hidden outline-none', isActivePane && 'pane-active')}
+                          style={{ flex: `0 0 ${sizes[idx]}%` }}
+                          onClick={() => activatePane(project.id, tab.id, pane.id, true)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              activatePane(project.id, tab.id, pane.id, true);
+                            }
+                          }}
+                          onContextMenu={(e) => {
+                            activatePane(project.id, tab.id, pane.id, false);
+                            e.preventDefault();
+                            setContextMenu({ x: e.clientX, y: e.clientY, type: 'terminal', targetId: pane.id });
+                            setShowColorSubmenu(false);
+                            setShowSplitSubmenu(false);
+                          }}
+                        >
                           <TerminalView id={pane.id} shell={shell} args={args} cwd={cwd} theme={theme} isActive={isActivePane && isVisible} isVisible={isVisible} onExit={() => removePane(project.id, tab.id, pane.id)} onActivity={() => handleActivity(pane.id, projects, activeTab, activePaneId, currentView)} onSizeChange={(size) => setPaneSizesMap((prev) => ({ ...prev, [pane.id]: size }))} onReady={(id, api) => terminalApis.current.set(id, api)} onDispose={(id) => terminalApis.current.delete(id)} />
                         </div>
+                        {/* Vertical resize handle */}
                         {idx < tab.panes.length - 1 && <div className="pane-resizer" onMouseDown={(e) => { e.preventDefault(); const container = paneContainerRef.current; if (!container) return; const width = container.getBoundingClientRect().width || 1; const sizes = tab.paneSizes || tab.panes.map(() => 100 / Math.max(1, tab.panes.length)); resizeRef.current = { tabId: tab.id, index: idx, startX: e.clientX, startSizes: sizes, containerWidth: width }; document.body.style.cursor = 'col-resize'; }} />}
                       </React.Fragment>
                     );
@@ -360,10 +438,14 @@ const App: React.FC = () => {
                 </div>
               );
             }))}
+            
             {(!activeTab || activeTab.panes.length === 0) && currentView === 'terminal' && <div className="absolute inset-0 flex items-center justify-center text-[var(--charcoal)] opacity-30 lowercase italic">no active terminals. press Ctrl+Shift+1 to open one.</div>}
           </div>
+
+          {/* Settings View Container */}
           {currentView === 'settings' && <SettingsView profiles={profiles} updateProfile={updateProfile} theme={theme} setTheme={setTheme} exportWorkspace={() => { const state = { version: 2, projects, activeProjectId, activeTabId, theme, profiles, sidebarCollapsed }; const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'terminal-workspace.json'; a.click(); URL.revokeObjectURL(url); }} importWorkspace={() => fileInputRef.current?.click()} showOnboarding={() => { setShowOnboarding(true); setOnboardingStep(0); setCurrentView('terminal'); }} resetState={resetWorkspace} />}
         </div>
+
         <StatusBar projectName={activeProject?.name} tabTitle={activeTab?.title} profileName={resolvePaneConfig(activePane).profile.name} cwd={resolvePaneConfig(activePane).cwd || '~'} cols={activePaneId ? paneSizesMap[activePaneId]?.cols : undefined} rows={activePaneId ? paneSizesMap[activePaneId]?.rows : undefined} isConnected={Boolean(activePaneId)} />
       </main>
     </div>

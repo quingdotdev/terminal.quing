@@ -5,6 +5,9 @@ import { SearchAddon } from 'xterm-addon-search';
 import 'xterm/css/xterm.css';
 import { XTERM_THEMES, type ThemeName } from '../state/themes';
 
+/**
+ * Public API for interacting with a TerminalView instance.
+ */
 export interface TerminalApi {
   focus: () => void;
   copySelection: () => string;
@@ -31,6 +34,11 @@ interface TerminalViewProps {
   onSizeChange?: (size: { cols: number; rows: number }) => void;
 }
 
+/**
+ * Terminal component wrapping xterm.js.
+ * Manages the lifecycle of a terminal session, including creation, resizing,
+ * and communication with the Electron backend.
+ */
 const TerminalView: React.FC<TerminalViewProps> = ({
   id,
   cwd,
@@ -50,6 +58,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({
   const fitAddonRef = useRef<FitAddon | null>(null);
   const isVisibleRef = useRef<boolean>(isVisible);
 
+  // Sync visibility ref for the async init loop
   useEffect(() => {
     isVisibleRef.current = isVisible;
     if (isVisible && fitAddonRef.current && xtermRef.current) {
@@ -62,12 +71,14 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     }
   }, [id, isVisible, onSizeChange]);
 
+  // Update xterm theme when application theme changes
   useEffect(() => {
     if (xtermRef.current) {
       xtermRef.current.options.theme = XTERM_THEMES[theme];
     }
   }, [theme]);
 
+  // Terminal Lifecycle Management
   useEffect(() => {
     if (!terminalRef.current) return;
 
@@ -192,6 +203,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     };
   }, [id]);
 
+  // Direct focus when tab becomes active
   useEffect(() => {
     if (!isActive) return;
     const handle = requestAnimationFrame(() => {
