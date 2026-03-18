@@ -57,9 +57,8 @@ interface TerminalViewProps {
 }
 
 /**
- * Terminal component wrapping xterm.js.
- * Manages the lifecycle of a terminal session, including creation, resizing,
- * and communication with the Electron backend.
+ * this component wraps the xterm.js terminal. it handles the lifecycle of a single 
+ * terminal pane. it communicates with the electron main process to run a real shell.
  */
 const TerminalView: React.FC<TerminalViewProps> = ({
   id,
@@ -84,7 +83,10 @@ const TerminalView: React.FC<TerminalViewProps> = ({
   const joinerIdRef = useRef<number | null>(null);
   const isVisibleRef = useRef<boolean>(isVisible);
 
-  // Sync visibility ref for the async init loop
+  /**
+   * this effect keeps the visibility ref in sync. it also triggers a resize 
+   * calculation when a terminal becomes visible.
+   */
   useEffect(() => {
     isVisibleRef.current = isVisible;
     if (isVisible && fitAddonRef.current && xtermRef.current) {
@@ -97,7 +99,9 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     }
   }, [id, isVisible, onSizeChange]);
 
-  // Update xterm options when props change
+  /**
+   * this effect updates the xterm theme and font family when the app settings change.
+   */
   useEffect(() => {
     if (xtermRef.current) {
       xtermRef.current.options.theme = XTERM_THEMES[theme][themeVariant];
@@ -105,7 +109,9 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     }
   }, [theme, themeVariant, terminalFontFamily]);
 
-  // Terminal Lifecycle Management
+  /**
+   * this is the main setup for the terminal. it runs once when the component mounts.
+   */
   useEffect(() => {
     if (!terminalRef.current) return;
 
@@ -113,6 +119,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     let cleanupData: (() => void) | undefined;
     let cleanupExit: (() => void) | undefined;
 
+    // first we create the xterm instance. we enable the cursor and set the font.
     const terminal = new Terminal({
       cursorBlink: true,
       fontSize: 14,
@@ -121,6 +128,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({
       allowProposedApi: true,
     });
 
+    // then we add the fit and search plugins.
     const fitAddon = new FitAddon();
     const searchAddon = new SearchAddon();
     terminal.loadAddon(fitAddon);
@@ -130,6 +138,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     xtermRef.current = terminal;
     fitAddonRef.current = fitAddon;
 
+    // we create a simple api so the parent component can control this terminal.
     const api: TerminalApi = {
       focus: () => terminal.focus(),
       copySelection: () => terminal.getSelection(),
@@ -154,12 +163,15 @@ const TerminalView: React.FC<TerminalViewProps> = ({
 
     onReady?.(id, api);
 
+    // this function starts the actual shell process in the background.
     const initTerminal = async () => {
       requestAnimationFrame(() => {
         if (!isMounted) return;
         if (isVisibleRef.current) {
           fitAddon.fit();
         }
+        
+        // we ask the electron bridge to create a new pty process.
         window.terminalAPI
           .createTerminal({
             id,
@@ -175,19 +187,23 @@ const TerminalView: React.FC<TerminalViewProps> = ({
               return;
             }
 
+            // when the pty sends data, we write it to the screen.
             cleanupData = window.terminalAPI.onData(id, (data: string) => {
               terminal.write(data);
               onActivity?.();
             });
 
+            // when the shell exits, we notify the parent.
             cleanupExit = window.terminalAPI.onExit(id, (_status) => {
               if (onExit) onExit();
             });
 
+            // when the user types, we send the keys to the shell.
             terminal.onData((data) => {
               window.terminalAPI.write(id, data);
             });
 
+            // we tell the shell the initial size of the window.
             window.terminalAPI.resize(id, {
               cols: terminal.cols,
               rows: terminal.rows,
@@ -199,6 +215,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({
 
     initTerminal();
 
+    // this handler manages resizing when the container changes size.
     const handleResize = () => {
       if (!isVisibleRef.current) return;
       if (fitAddonRef.current && xtermRef.current) {
@@ -218,6 +235,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     resizeObserver.observe(terminalRef.current);
     window.addEventListener('resize', handleResize);
 
+    // finally we clean up everything when the terminal is closed.
     return () => {
       isMounted = false;
       resizeObserver.disconnect();
@@ -234,7 +252,10 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     };
   }, [id]);
 
-  // Toggle ligatures at runtime (terminal only)
+  /**
+   * this effect handles font ligatures. it tells xterm how to join characters 
+   * together into single symbols.
+   */
   useEffect(() => {
     const terminal = xtermRef.current;
     if (!terminal) return;
@@ -262,7 +283,9 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     }
   }, [terminalFontLigatures]);
 
-  // Direct focus when tab becomes active
+  /**
+   * this effect focuses the terminal when the user switches to this tab.
+   */
   useEffect(() => {
     if (!isActive) return;
     const handle = requestAnimationFrame(() => {
@@ -270,6 +293,7 @@ const TerminalView: React.FC<TerminalViewProps> = ({
     });
     return () => cancelAnimationFrame(handle);
   }, [isActive]);
+
 
   return (
     <div

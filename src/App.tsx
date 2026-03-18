@@ -35,11 +35,11 @@ const PRESET_COLORS = [
 ];
 
 /**
- * Root Application Component.
- * Orchestrates the overall layout, workspace state, keyboard shortcuts, and view switching.
+ * this is the root component of the application. it orchestrates the layout, 
+ * global keyboard shortcuts, and view switching.
  */
 const App: React.FC = () => {
-  // Centralized workspace management logic
+  // we use a custom hook to manage all workspace logic in one place.
   const {
     projects,
     setProjects,
@@ -81,7 +81,7 @@ const App: React.FC = () => {
     handleActivity,
   } = useWorkspace();
 
-  // Local UI state
+  // these state values handle the visibility of various ui overlays.
   const [currentView, setCurrentView] = useState<'terminal' | 'settings'>('terminal');
   const [showShellMenu, setShowShellMenu] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; type: 'project' | 'tab' | 'terminal'; targetId: string } | null>(null);
@@ -101,7 +101,7 @@ const App: React.FC = () => {
   const [paneSizesMap, setPaneSizesMap] = useState<Record<string, { cols: number; rows: number }>>({});
   const [draggingTabId, setDraggingTabId] = useState<string | null>(null);
 
-  // Refs for DOM manipulation and component communication
+  // these refs provide direct access to dom elements and api instances.
   const menuRef = useRef<HTMLDivElement>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const paletteInputRef = useRef<HTMLInputElement>(null);
@@ -112,20 +112,23 @@ const App: React.FC = () => {
 
   const quickProfiles = profiles.slice(0, 3);
 
-  // Apply theme to document root
+  /**
+   * this effect applies the theme variables to the document root. it ensures 
+   * the slate design language is applied globally.
+   */
   useEffect(() => {
     document.documentElement.setAttribute('data-theme-family', theme);
     document.documentElement.setAttribute('data-theme-variant', themeVariant);
   }, [theme, themeVariant]);
 
-  // Derived active state
+  // we derive the active objects from the state ids.
   const activeProject = projects.find((p) => p.id === activeProjectId) || projects[0];
   const activeTab = activeProject?.tabs.find((t) => t.id === activeTabId) || activeProject?.tabs[0];
   const activePaneId = activeTab?.activePaneId || activeTab?.panes?.[0]?.id;
   const activePane = activeTab?.panes.find((p) => p.id === activePaneId) || activeTab?.panes?.[0];
 
   /**
-   * Resolves final shell configuration for a pane based on its assigned profile.
+   * this function computes the final shell configuration for a terminal pane.
    */
   const resolvePaneConfig = useCallback((pane?: any) => {
     const profile = getProfileById(pane?.profileId);
@@ -138,7 +141,7 @@ const App: React.FC = () => {
   }, [getProfileById]);
 
   /**
-   * Handlers for terminal selection and clipboard operations.
+   * these functions handle clipboard and selection for the active terminal.
    */
   const handleCopy = useCallback(() => {
     if (!activePaneId) return;
@@ -159,7 +162,7 @@ const App: React.FC = () => {
     terminalApis.current.get(activePaneId)?.selectAll();
   }, [activePaneId, terminalApis]);
 
-  // Global Keyboard Shortcuts
+  // this hook manages all global keyboard shortcuts.
   useKeyboardShortcuts({
     setSidebarCollapsed,
     setShowPalette,
@@ -184,7 +187,7 @@ const App: React.FC = () => {
   });
 
   /**
-   * List of actions available in the Command Palette.
+   * this list defines the actions available in the command palette.
    */
   const paletteActions = useMemo(() => {
     const actions: Array<{ label: string; icon: any; action: () => void; category: string }> = [];
@@ -251,8 +254,7 @@ const App: React.FC = () => {
   }, [profiles, activeProjectId, activeTab, theme, themeVariant, terminalFontFamily, terminalFontLigatures, projects, activeTabId, sidebarCollapsed, paletteSearch, addTab, splitTab, unsplitTab, setThemeVariant, setCurrentView]);
 
   /**
-   * Pane Resizing Logic.
-   * Uses a persistent resize observer and mouse event listeners.
+   * these functions manage the visual resizing of terminal panes.
    */
   const handleResizeMove = useCallback((event: MouseEvent) => {
     if (!resizeRef.current) return;
@@ -282,7 +284,7 @@ const App: React.FC = () => {
   }, [handleResizeMove, handleResizeEnd]);
 
   /**
-   * Global click-outside listener for closing menus.
+   * this effect closes menus and submenus when the user clicks outside of them.
    */
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -295,7 +297,7 @@ const App: React.FC = () => {
   }, []);
 
   /**
-   * Evaluates if tabs should be rendered in "compact" mode based on count and width.
+   * this effect determines if the tab strip should use a compact layout.
    */
   useLayoutEffect(() => {
     const element = tabStripRef.current;
@@ -312,7 +314,7 @@ const App: React.FC = () => {
   }, [projects, activeProjectId, sidebarCollapsed, sidebarHovered, activeProject]);
 
   /**
-   * Helper to render the label for a tab, considering split panes and compact mode.
+   * this function renders the label for a tab. it handles split tab names and truncation.
    */
   const renderTabLabel = (tab: TerminalTab) => {
     const parts = (tab.panes || []).map((p) => ({ title: p.title || tab.title || 'terminal', color: p.color }));
@@ -331,6 +333,7 @@ const App: React.FC = () => {
       </span>
     );
   };
+
 
   return (
     <div className="flex h-screen w-full bg-[var(--start)] text-[var(--charcoal)] transition-colors duration-200">

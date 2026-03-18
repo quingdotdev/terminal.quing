@@ -1,58 +1,24 @@
 # workspace
 
-the workspace is persisted in local storage and can be exported to a json file. the stored version is `2`.
+the workspace is how terminal by Quing stores its state. it is kept in local storage and can be exported as a json file. the current workspace version is 2.
 
 ## persistence
 
-on launch, the app reads `workspace` from local storage and normalizes it. if legacy keys such as `projects`, `activeProjectId`, or `theme` exist, they are migrated into the new structure.
+on launch, the app reads the workspace from local storage. it then normalizes the data. if the stored data is from an older version, the app migrates it to the new structure. this ensures the app can always read your saved terminals and projects.
 
 ## import and export
 
-export writes the full workspace to `terminal-workspace.json`. import replaces the current workspace after validation and normalization. invalid files are rejected with an error prompt.
+you can export your full workspace to a file named `terminal-workspace.json`. you can also import a workspace file. the app validates and normalizes the file before loading it. if a file is invalid, the app rejects it.
 
-## schema
+## structure
 
-| field | type | notes |
-| --- | --- | --- |
-| version | number | current version is 2 |
-| projects | array | list of project objects |
-| activeProjectId | string | current project id |
-| activeTabId | string | current tab id |
-| theme | string | `light`, `dark`, or `dusk` |
-| profiles | array | profile definitions |
-| sidebarCollapsed | boolean | sidebar density flag |
+the workspace uses a clear hierarchy. it contains global settings like the version, the theme, and the profiles. it also contains the list of projects.
 
-project objects contain tabs.
+a project represents a group of work. it has an id and a name. it contains a list of tabs.
 
-| project field | type | notes |
-| --- | --- | --- |
-| id | string | stable id |
-| name | string | display name |
-| tabs | array | list of tab objects |
+a tab is a single view within a project. it has an id and a title. it can have a custom color. it contains a list of panes. it also tracks which pane is currently active and the relative sizes of all panes.
 
-tab objects contain panes.
-
-| tab field | type | notes |
-| --- | --- | --- |
-| id | string | stable id |
-| title | string | display name |
-| panes | array | list of pane objects |
-| color | string | optional tab color |
-| paneSizes | array | per pane widths in percent |
-| activePaneId | string | current pane id |
-
-pane objects carry terminal settings.
-
-| pane field | type | notes |
-| --- | --- | --- |
-| id | string | stable id |
-| title | string | display name |
-| color | string | optional pane color |
-| profileId | string | profile reference |
-| shell | string | optional override |
-| args | array | optional override |
-| cwd | string | optional override |
-| lastActivityTs | number | optional timestamp |
+a pane is a single terminal instance. it has an id and a title. it stores the configuration for its shell process. it can override the default shell, arguments, and working directory.
 
 ## example
 

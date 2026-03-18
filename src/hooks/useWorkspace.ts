@@ -6,10 +6,8 @@ import type { ThemeFamily, ThemeVariant } from '../state/themes';
 const randomId = () => Math.random().toString(36).slice(2, 9);
 
 /**
- * Custom hook to manage the terminal workspace state.
- * Handles projects, tabs, panes, profiles, themes, and persistence to localStorage.
- * 
- * @returns An object containing workspace state and functions to manipulate it.
+ * this hook manages the workspace state. it handles projects, tabs, and profiles. 
+ * it also handles saving and loading from local storage.
  */
 export const useWorkspace = () => {
   const initialWorkspace = loadWorkspace();
@@ -25,10 +23,10 @@ export const useWorkspace = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(initialWorkspace.sidebarCollapsed);
   const [tabActivity, setTabActivity] = useState<Record<string, boolean>>({});
 
-  // Reference to terminal API instances for direct manipulation (focus, find, etc.)
+  // this map stores the terminal apis so the ui can control them.
   const terminalApis = useRef<Map<string, any>>(new Map());
 
-  // Automatically save workspace changes to localStorage
+  // this effect saves the workspace to local storage whenever a value changes.
   useEffect(() => {
     saveWorkspace({
       version: 2,
@@ -45,14 +43,15 @@ export const useWorkspace = () => {
   }, [projects, activeProjectId, activeTabId, theme, themeVariant, terminalFontFamily, terminalFontLigatures, profiles, sidebarCollapsed]);
 
   /**
-   * Retrieves a profile by ID or returns a default fallback.
+   * this function finds a profile by its id. it returns a default profile if no id 
+   * is provided or found.
    */
   const getProfileById = useCallback((profileId?: string) => {
     return profiles.find((p) => p.id === profileId) || profiles[0] || DEFAULT_PROFILES[0];
   }, [profiles]);
 
   /**
-   * Sets the active tab and clears its activity indicator.
+   * this function sets the active tab. it also removes the activity dot for that tab.
    */
   const setActiveTab = useCallback((tabId: string) => {
     setActiveTabId(tabId);
@@ -64,8 +63,7 @@ export const useWorkspace = () => {
   }, []);
 
   /**
-   * Activates a specific pane within a tab and project.
-   * Optionally focuses the terminal.
+   * this function activates a specific pane. it can also focus the terminal.
    */
   const activatePane = useCallback((projectId: string, tabId: string, paneId: string, focus = true) => {
     setProjects((prev) =>
@@ -88,7 +86,8 @@ export const useWorkspace = () => {
   }, []);
 
   /**
-   * Adds a new tab to a project using a specific profile.
+   * this function adds a new tab to a project. it uses the selected profile to 
+   * create the first terminal pane.
    */
   const addTab = useCallback((projectId: string, profileId?: string) => {
     const profile = getProfileById(profileId);
@@ -116,7 +115,8 @@ export const useWorkspace = () => {
   }, [getProfileById, setActiveTab]);
 
   /**
-   * Splits a tab by adding a new pane or moving panes from another tab.
+   * this function splits a tab. it can either add a new pane or move panes from 
+   * another tab. it also normalizes the pane sizes.
    */
   const splitTab = useCallback((projectId: string, targetTabId: string, sourceTabId?: string) => {
     setProjects((prev) =>
@@ -133,7 +133,7 @@ export const useWorkspace = () => {
         let newTabs = [...p.tabs];
 
         if (sourceTabId) {
-          // Move panes from sourceTab to targetTab
+          // move panes from sourceTab to targetTab.
           const sourceTab = p.tabs.find((t) => t.id === sourceTabId);
           if (sourceTab) {
             const sourcePanes = sourceTab.panes.map((pane) => ({
@@ -145,7 +145,7 @@ export const useWorkspace = () => {
             newTabs = newTabs.filter((t) => t.id !== sourceTabId);
           }
         } else {
-          // Add a fresh pane to targetTab
+          // add a new pane to the target tab.
           const sourcePane = targetTab.panes.find((pane) => pane.id === targetTab.activePaneId) || targetTab.panes[targetTab.panes.length - 1];
           const profile = getProfileById(sourcePane?.profileId);
           const newPane: Pane = {
@@ -175,7 +175,7 @@ export const useWorkspace = () => {
   }, [getProfileById, setActiveTab]);
 
   /**
-   * Explodes a split tab back into individual tabs.
+   * this function explodes a split tab into individual tabs.
    */
   const unsplitTab = useCallback((projectId: string, tabId: string) => {
     setProjects((prev) =>
@@ -228,7 +228,7 @@ export const useWorkspace = () => {
   }, []);
 
   /**
-   * Reorders a tab within its project.
+   * this function moves a tab left or right within its project.
    */
   const moveTab = useCallback((projectId: string, tabId: string, direction: 'left' | 'right') => {
     setProjects((prev) =>
@@ -247,7 +247,7 @@ export const useWorkspace = () => {
   }, []);
 
   /**
-   * Drag-and-drop tab reordering.
+   * this function reorders tabs using drag and drop.
    */
   const reorderTabs = useCallback((projectId: string, fromId: string, toId: string) => {
     if (fromId === toId) return;
@@ -266,7 +266,8 @@ export const useWorkspace = () => {
   }, []);
 
   /**
-   * Sets the theme color for a specific tab.
+   * this function sets the color for a tab. if the tab only has one pane, it also 
+   * sets the color for that pane.
    */
   const setTabColor = useCallback((projectId: string, tabId: string, color?: string) => {
     setProjects((prev) =>
@@ -288,7 +289,8 @@ export const useWorkspace = () => {
   }, []);
 
   /**
-   * Closes a tab. If it's the active tab, switch to another.
+   * this function removes a tab. if the tab was active, it switches focus to another 
+   * tab.
    */
   const removeTab = useCallback((projectId: string, tabId: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -305,8 +307,8 @@ export const useWorkspace = () => {
   }, [activeTabId, setActiveTab]);
 
   /**
-   * Closes a single pane within a tab. 
-   * If it's the last pane, the tab itself is removed.
+   * this function removes a single pane. if it was the last pane, it also removes 
+   * the tab.
    */
   const removePane = useCallback((projectId: string, tabId: string, paneId: string) => {
     setProjects((prev) => {
@@ -334,7 +336,7 @@ export const useWorkspace = () => {
   }, []);
 
   /**
-   * Deletes a project.
+   * this function deletes an entire project. it also manages active project focus.
    */
   const removeProject = useCallback((projectId: string) => {
     setProjects((prev) => {
@@ -348,7 +350,7 @@ export const useWorkspace = () => {
   }, [activeProjectId, setActiveTab]);
 
   /**
-   * Clones an existing tab.
+   * this function clones a tab and all its panes.
    */
   const duplicateTab = useCallback((projectId: string, tabId: string) => {
     const newTabId = randomId();
@@ -377,7 +379,7 @@ export const useWorkspace = () => {
   }, [setActiveTab]);
 
   /**
-   * Scaffolds a new project with a default tab.
+   * this function creates a new project with one default terminal.
    */
   const addProject = useCallback(() => {
     const id = randomId();
@@ -412,14 +414,14 @@ export const useWorkspace = () => {
   }, [getProfileById, projects.length, setActiveTab]);
 
   /**
-   * Updates a project's display name.
+   * this function renames a project.
    */
   const handleRenameProject = useCallback((id: string, name: string) => {
     setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, name: name || p.name } : p)));
   }, []);
 
   /**
-   * Updates a tab's display name.
+   * this function renames a tab. if the tab has one pane, it also renames the pane.
    */
   const handleRenameTab = useCallback((projectId: string, tabId: string, title: string) => {
     setProjects((prev) =>
@@ -439,7 +441,7 @@ export const useWorkspace = () => {
   }, []);
 
   /**
-   * Wipes all local state and returns to a fresh workspace.
+   * this function clears all state and resets the workspace.
    */
   const resetWorkspace = useCallback(() => {
     localStorage.clear();
@@ -456,14 +458,14 @@ export const useWorkspace = () => {
   }, []);
 
   /**
-   * Modifies a shell profile (path, args, cwd).
+   * this function updates a shell profile.
    */
   const updateProfile = useCallback((id: string, updates: Partial<Profile>) => {
     setProfiles((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
   }, []);
 
   /**
-   * Replaces current workspace with data from an imported JSON file.
+   * this function imports a workspace from a data object.
    */
   const importWorkspace = useCallback((data: any) => {
     const normalized = normalizeWorkspace(data);
@@ -479,7 +481,8 @@ export const useWorkspace = () => {
   }, []);
 
   /**
-   * Marks a tab as having "activity" (e.g., terminal output) if it's not currently focused.
+   * this function tracks terminal activity. it shows a dot on tabs that have new 
+   * output but are not currently focused.
    */
   const handleActivity = useCallback((paneId: string, projects: Project[], activeTab: TerminalTab | undefined, activePaneId: string | undefined, currentView: string) => {
     const active = activeTab?.panes.some((p) => p.id === paneId);
@@ -495,6 +498,7 @@ export const useWorkspace = () => {
     if (!tabForPane) return;
     setTabActivity((prev) => ({ ...prev, [tabForPane!.id]: true }));
   }, []);
+
 
   return {
     projects,

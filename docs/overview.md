@@ -1,26 +1,27 @@
 # overview
 
-terminal by Quing is a desktop terminal focused on multi project work. it keeps projects, tabs, and panes in a single workspace and restores that workspace on launch.
+terminal by Quing is a desktop terminal designed for multi project work. it keeps projects, tabs, and panes in a single workspace and restores that workspace every time you launch the app.
 
 ## purpose
 
-terminal by Quing was created so i can have a terminal that works with my multi project workflow and for people who need multi terminal multitasking.
+terminal by Quing was created to support complex workflows. it allows you to manage multiple codebases without fragmenting your focus. it is built for developers who need to multitask across different terminal environments.
 
 ## design language
 
-slate is the design language. it keeps the interface minimal and deliberate. motion is limited to what is required for clarity, and ornament is absent. the goal is a calm, functional surface that stays out of the way.
+the app follows the slate design language. the interface is minimal and deliberate. motion is used only when it adds clarity. there is no unnecessary ornament. the result is a calm, functional surface that stays out of the way.
 
-## feature summary
+## capabilities
 
-| capability | intent |
-| --- | --- |
-| multi project workspace | keep several codebases open without fragmentation |
-| tabs and panes | split work by task and keep context visible |
-| pane resizing | drag handles make splits practical, not equal slices |
-| profile driven shells | shells, args, and cwd are explicit and editable |
-| search and palette | locate output and trigger actions without a mouse |
-| workspace portability | import and export the full workspace as json |
+the multi project workspace lets you group terminals by task. you can use tabs and panes to keep your context visible at all times.
+
+pane resizing is flexible. you can drag handles to create custom layouts that suit your needs.
+
+shells are driven by profiles. you can define the shell path, arguments, and initial directory for every terminal you open.
+
+the command palette and terminal search let you trigger actions and find output without using a mouse.
+
+workspace portability is built in. you can export your entire configuration as a json file and import it on another machine.
 
 ## scope and limits
 
-windows is the primary target. the default profiles assume windows shells and the build configuration targets windows packaging. other platforms may require new profiles and packaging changes.
+windows is the primary target for this application. the default profiles use windows shells and the build configuration is optimized for windows packaging.
